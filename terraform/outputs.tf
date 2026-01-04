@@ -1,0 +1,25 @@
+output "web_alb_dns" {
+  description = "DNS name of the web application load balancer"
+  value       = aws_lb.web.dns_name
+}
+
+output "backend_alb_dns" {
+  description = "DNS name of the backend load balancer"
+  value       = aws_lb.backend.dns_name
+}
+
+output "web_server_ips" {
+  description = "Public IPs of web servers"
+  value       = [aws_instance.web_server_1.public_ip, aws_instance.web_server_2.public_ip]
+}
+
+output "backend_server_ips" {
+  description = "Private IPs of backend servers"
+  value       = [aws_instance.backend_server_1.private_ip, aws_instance.backend_server_2.private_ip]
+}
+
+output "rds_endpoint" {
+  description = "RDS PostgreSQL endpoint"
+  value       = aws_db_instance.postgres.endpoint
+  sensitive   = true
+}

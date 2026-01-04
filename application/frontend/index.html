@@ -1,0 +1,1465 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Techleat-superstore.com — Fruit & Vegetable Online Store</title>
+  <meta name="description" content="Techleat-superstore.com — bold, beautiful produce. Fast, fresh, and fun." />
+  <style>
+    :root{
+      --bg0:#060607;
+      --bg1:#0b0b10;
+      --card:#0f1016cc;
+      --card2:#0f1016;
+      --stroke:#ffffff12;
+      --stroke2:#ffffff20;
+      --text:#f3f4f6;
+      --muted:#c9cbd3;
+      --muted2:#9aa0ad;
+
+      --red:#ff2a2a;
+      --red2:#ff3b6a;
+      --green:#1ee58b;
+      --green2:#00d4a2;
+      --amber:#ffcc66;
+
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --shadow2: 0 10px 30px rgba(0,0,0,.45);
+
+      --radius: 22px;
+      --radius2: 16px;
+
+      --blur: 18px;
+      --max: 1180px;
+
+      --ease: cubic-bezier(.2,.9,.2,1);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--text);
+      background: radial-gradient(1100px 900px at 20% 10%, rgba(255,45,45,.25), transparent 55%),
+                  radial-gradient(900px 900px at 55% 50%, rgba(255,45,120,.18), transparent 55%),
+                  radial-gradient(1000px 800px at 80% 20%, rgba(255,255,255,.07), transparent 55%),
+                  radial-gradient(900px 700px at 30% 80%, rgba(30,229,139,.12), transparent 55%),
+                  linear-gradient(180deg, #060607 0%, #07070a 45%, #050507 100%);
+      overflow-x:hidden;
+    }
+
+    /* Soft "Bloomberg Stock Movers" vibe: blurred red shapes */
+    .glow{
+      position:fixed; inset:-20vmax;
+      pointer-events:none;
+      filter: blur(50px) saturate(130%);
+      opacity:.9;
+      z-index:0;
+    }
+    .blob{
+      position:absolute;
+      width:48vmax; height:48vmax;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, rgba(255,50,50,.75), rgba(255,0,0,.0) 62%);
+      mix-blend-mode: screen;
+      animation: drift 18s var(--ease) infinite alternate;
+    }
+    .blob.b2{
+      width:42vmax; height:42vmax;
+      left:55%; top:12%;
+      background: radial-gradient(circle at 40% 35%, rgba(255,60,120,.62), rgba(255,0,0,.0) 63%);
+      animation-duration: 22s;
+    }
+    .blob.b3{
+      width:40vmax; height:40vmax;
+      left:8%; top:55%;
+      background: radial-gradient(circle at 40% 45%, rgba(30,229,139,.26), rgba(0,0,0,0) 62%);
+      animation-duration: 26s;
+    }
+    @keyframes drift{
+      from{ transform: translate3d(0,0,0) scale(1); }
+      to  { transform: translate3d(6vmax,-3vmax,0) scale(1.05); }
+    }
+
+    .wrap{
+      position:relative;
+      z-index:1;
+      width:min(var(--max), calc(100% - 40px));
+      margin:0 auto;
+      padding: 26px 0 60px;
+    }
+
+    /* Top bar */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding: 16px 18px;
+      background: linear-gradient(180deg, rgba(15,16,22,.72), rgba(15,16,22,.45));
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      backdrop-filter: blur(var(--blur));
+      box-shadow: var(--shadow2);
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      min-width: 240px;
+    }
+    .logo{
+      width:44px; height:44px;
+      border-radius:14px;
+      background: radial-gradient(circle at 25% 30%, rgba(30,229,139,.9), rgba(30,229,139,.1) 60%),
+                  radial-gradient(circle at 70% 70%, rgba(255,45,45,.85), rgba(255,45,45,.05) 62%),
+                  linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,0));
+      border: 1px solid var(--stroke2);
+      position:relative;
+      overflow:hidden;
+    }
+    .logo::after{
+      content:"";
+      position:absolute; inset:-30%;
+      background: radial-gradient(circle, rgba(255,255,255,.25), transparent 55%);
+      transform: rotate(20deg);
+      opacity:.55;
+    }
+    .brand h1{
+      margin:0;
+      font-size: 14px;
+      line-height:1.1;
+      letter-spacing:.2px;
+      font-weight:800;
+    }
+    .brand h1 span{
+      display:block;
+      font-size: 12px;
+      font-weight:650;
+      color: var(--muted2);
+      letter-spacing:.25px;
+      margin-top: 4px;
+    }
+
+    .search{
+      flex:1;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: rgba(5,5,7,.45);
+      border: 1px solid var(--stroke);
+      min-width: 220px;
+    }
+    .search svg{ opacity:.85; }
+    .search input{
+      width:100%;
+      border:0;
+      outline:0;
+      color:var(--text);
+      background:transparent;
+      font-size: 14px;
+    }
+    .search input::placeholder{ color: rgba(201,203,211,.65); }
+
+    .actions{
+      display:flex; align-items:center; gap:10px;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      border: 1px solid var(--stroke);
+      background: rgba(5,5,7,.35);
+      color:var(--text);
+      padding: 11px 12px;
+      border-radius: 18px;
+      cursor:pointer;
+      transition: transform .18s var(--ease), border-color .18s var(--ease), background .18s var(--ease);
+      user-select:none;
+      box-shadow: 0 10px 25px rgba(0,0,0,.25);
+    }
+    .btn:hover{ transform: translateY(-1px); border-color: rgba(255,255,255,.28); background: rgba(5,5,7,.55); }
+    .btn:active{ transform: translateY(0px) scale(.98); }
+    .pill{
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: rgba(255,45,45,.18);
+      border: 1px solid rgba(255,45,45,.22);
+      font-size: 12px;
+      font-weight:800;
+    }
+
+    /* Hero */
+    .hero{
+      margin-top: 18px;
+      display:grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .heroMain{
+      position:relative;
+      padding: 22px 22px 18px;
+      border-radius: var(--radius);
+      border: 1px solid var(--stroke);
+      background:
+        radial-gradient(900px 450px at 10% 0%, rgba(255,45,45,.25), transparent 55%),
+        radial-gradient(650px 450px at 70% 20%, rgba(30,229,139,.18), transparent 55%),
+        linear-gradient(180deg, rgba(15,16,22,.68), rgba(10,10,14,.52));
+      backdrop-filter: blur(var(--blur));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .stockDots{
+      position:absolute;
+      right: 18px; top: 18px;
+      width: 185px; height: 165px;
+      border-radius: 20px;
+      background: rgba(0,0,0,.62);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: 0 18px 50px rgba(0,0,0,.55);
+      overflow:hidden;
+    }
+    .stockDots canvas{ width:100%; height:100%; display:block; }
+
+    .heroTitle{
+      margin: 2px 0 10px;
+      font-size: clamp(26px, 3.2vw, 44px);
+      line-height: 1.02;
+      font-weight: 900;
+      letter-spacing: -0.7px;
+    }
+    .heroTitle .accent{
+      background: linear-gradient(90deg, rgba(255,255,255,.95), rgba(255,255,255,.78));
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    .heroTitle .accent2{
+      background: linear-gradient(90deg, rgba(30,229,139,.95), rgba(255,45,45,.95));
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    .heroSub{
+      max-width: 54ch;
+      margin: 0 0 14px;
+      color: rgba(201,203,211,.85);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .heroRow{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 10px;
+      align-items:center;
+    }
+    .cta{
+      background: linear-gradient(180deg, rgba(255,45,45,.25), rgba(255,45,45,.14));
+      border: 1px solid rgba(255,45,45,.25);
+    }
+    .cta:hover{
+      border-color: rgba(255,45,45,.45);
+      background: linear-gradient(180deg, rgba(255,45,45,.32), rgba(255,45,45,.18));
+    }
+    .ghost{
+      background: rgba(5,5,7,.18);
+      border-color: rgba(255,255,255,.12);
+    }
+
+    .heroStats{
+      margin-top: 16px;
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 10px;
+    }
+    .stat{
+      padding: 12px 12px;
+      border-radius: 18px;
+      background: rgba(5,5,7,.28);
+      border: 1px solid var(--stroke);
+    }
+    .stat b{ display:block; font-size: 16px; letter-spacing:-.2px; }
+    .stat span{ display:block; margin-top:4px; color: rgba(201,203,211,.70); font-size: 12px; }
+
+    /* Side card */
+    .heroSide{
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+    }
+    .sideCard{
+      padding: 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(15,16,22,.62), rgba(10,10,14,.50));
+      backdrop-filter: blur(var(--blur));
+      box-shadow: var(--shadow2);
+      overflow:hidden;
+      position:relative;
+    }
+    .sideCard h3{
+      margin:0 0 8px;
+      font-size: 14px;
+      letter-spacing:.2px;
+    }
+    .sideCard p{
+      margin:0;
+      color: rgba(201,203,211,.78);
+      font-size: 13px;
+      line-height:1.45;
+    }
+    .badgeRow{
+      display:flex; gap:8px; flex-wrap:wrap;
+      margin-top: 12px;
+    }
+    .badge{
+      font-size: 12px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: rgba(0,0,0,.25);
+      color: rgba(243,244,246,.9);
+      display:inline-flex; gap:8px; align-items:center;
+    }
+    .dot{
+      width:8px; height:8px; border-radius:99px;
+      background: rgba(30,229,139,.9);
+      box-shadow: 0 0 0 4px rgba(30,229,139,.12);
+    }
+    .dot.red{ background: rgba(255,45,45,.9); box-shadow: 0 0 0 4px rgba(255,45,45,.12); }
+    .sideCard::after{
+      content:"";
+      position:absolute; inset:-30%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.10), transparent 55%),
+                  radial-gradient(circle at 70% 70%, rgba(255,45,45,.12), transparent 58%);
+      transform: rotate(12deg);
+      opacity:.9;
+      pointer-events:none;
+    }
+
+    /* Controls */
+    .controls{
+      margin-top: 16px;
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+    }
+    .chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+    }
+    .chip{
+      padding: 9px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: rgba(5,5,7,.25);
+      color: rgba(243,244,246,.88);
+      font-size: 13px;
+      cursor:pointer;
+      transition: transform .18s var(--ease), border-color .18s var(--ease), background .18s var(--ease);
+      user-select:none;
+    }
+    .chip:hover{ transform: translateY(-1px); border-color: rgba(255,255,255,.24); }
+    .chip.active{
+      border-color: rgba(30,229,139,.40);
+      background: rgba(30,229,139,.12);
+    }
+    .sort{
+      display:flex; gap:8px; align-items:center;
+    }
+    select{
+      appearance:none;
+      border-radius: 16px;
+      padding: 10px 12px;
+      border:1px solid var(--stroke);
+      background: rgba(5,5,7,.25);
+      color: rgba(243,244,246,.9);
+      outline:none;
+      cursor:pointer;
+    }
+
+    /* Grid */
+    .grid{
+      margin-top: 14px;
+      display:grid;
+      grid-template-columns: repeat(12, minmax(0,1fr));
+      gap: 12px;
+    }
+    .card{
+      grid-column: span 4;
+      background: linear-gradient(180deg, rgba(15,16,22,.62), rgba(10,10,14,.45));
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      overflow:hidden;
+      position:relative;
+      box-shadow: var(--shadow2);
+      transform: translateZ(0);
+      transition: transform .22s var(--ease), border-color .22s var(--ease), filter .22s var(--ease);
+    }
+    .card:hover{
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,.22);
+      filter: saturate(1.08);
+    }
+
+    .imgWrap{
+      height: 220px;
+      position:relative;
+      overflow:hidden;
+      background: rgba(0,0,0,.35);
+    }
+    .imgWrap img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      transform: scale(1.06);
+      transition: transform .45s var(--ease), filter .45s var(--ease);
+      filter: contrast(1.05) saturate(1.2);
+    }
+    .card:hover .imgWrap img{ transform: scale(1.12); filter: contrast(1.08) saturate(1.35); }
+
+    .shine{
+      position:absolute;
+      inset:-60% -60%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.18), transparent 55%);
+      transform: rotate(22deg);
+      opacity:.7;
+      pointer-events:none;
+    }
+
+    .tag{
+      position:absolute;
+      left: 12px;
+      top: 12px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing:.25px;
+      background: rgba(0,0,0,.55);
+      border: 1px solid rgba(255,255,255,.14);
+      backdrop-filter: blur(10px);
+    }
+    .tag.hot{ border-color: rgba(255,45,45,.35); }
+    .tag.fresh{ border-color: rgba(30,229,139,.35); }
+    .tag.deal{ border-color: rgba(255,204,102,.35); }
+
+    .content{
+      padding: 14px 14px 14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .titleRow{
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+      align-items:flex-start;
+    }
+    .name{
+      margin:0;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing:-.2px;
+    }
+    .meta{
+      color: rgba(201,203,211,.75);
+      font-size: 12px;
+      margin-top: 3px;
+    }
+    .price{
+      text-align:right;
+      white-space:nowrap;
+      font-weight: 900;
+      font-size: 16px;
+    }
+    .price small{
+      display:block;
+      font-weight:700;
+      font-size: 11px;
+      color: rgba(201,203,211,.70);
+      margin-top: 2px;
+      text-decoration: line-through;
+    }
+
+    .ratingRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+    }
+    .stars{
+      display:flex; gap:2px; align-items:center;
+      font-size: 12px;
+      color: rgba(255,204,102,.95);
+      user-select:none;
+    }
+    .stock{
+      font-size: 12px;
+      color: rgba(201,203,211,.75);
+      display:flex; align-items:center; gap:6px;
+    }
+    .stock i{
+      width:8px; height:8px; border-radius:50%;
+      background: rgba(30,229,139,.85);
+      box-shadow: 0 0 0 4px rgba(30,229,139,.10);
+      display:inline-block;
+    }
+    .stock.low i{ background: rgba(255,45,45,.9); box-shadow: 0 0 0 4px rgba(255,45,45,.12); }
+
+    .cardActions{
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      margin-top: 2px;
+    }
+    .qty{
+      display:flex; align-items:center; gap:8px;
+      padding: 8px 10px;
+      border-radius: 16px;
+      border: 1px solid var(--stroke);
+      background: rgba(5,5,7,.22);
+      user-select:none;
+    }
+    .qty button{
+      width:28px; height:28px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.25);
+      color: var(--text);
+      cursor:pointer;
+      transition: transform .15s var(--ease), border-color .15s var(--ease);
+    }
+    .qty button:hover{ transform: translateY(-1px); border-color: rgba(255,255,255,.25); }
+    .qty span{ min-width:18px; text-align:center; font-weight:900; font-size: 13px; }
+
+    .add{
+      flex:1;
+      justify-content:center;
+      background: linear-gradient(180deg, rgba(30,229,139,.20), rgba(30,229,139,.10));
+      border-color: rgba(30,229,139,.25);
+    }
+    .add:hover{ border-color: rgba(30,229,139,.45); }
+    .add svg{ opacity:.95; }
+
+    /* Cart drawer */
+    .drawerBackdrop{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.45);
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .22s var(--ease);
+      z-index: 50;
+    }
+    .drawerBackdrop.show{ opacity:1; pointer-events:auto; }
+
+    .drawer{
+      position:fixed;
+      top: 14px;
+      right: 14px;
+      height: calc(100% - 28px);
+      width: min(420px, calc(100% - 28px));
+      border-radius: 26px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: linear-gradient(180deg, rgba(15,16,22,.86), rgba(10,10,14,.72));
+      backdrop-filter: blur(22px);
+      box-shadow: 0 30px 90px rgba(0,0,0,.65);
+      transform: translateX(115%);
+      transition: transform .28s var(--ease);
+      z-index: 60;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+    .drawer.show{ transform: translateX(0); }
+    .drawerHeader{
+      padding: 16px 16px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+    .drawerHeader b{
+      font-size: 14px;
+      letter-spacing:.2px;
+    }
+    .drawerHeader .btn{ padding: 9px 10px; border-radius: 16px; }
+
+    .cartList{
+      padding: 12px 14px;
+      overflow:auto;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+      flex:1;
+    }
+    .cartItem{
+      display:grid;
+      grid-template-columns: 64px 1fr auto;
+      gap: 10px;
+      align-items:center;
+      padding: 10px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.22);
+    }
+    .cartItem img{
+      width:64px; height:64px; border-radius: 16px;
+      object-fit:cover;
+      filter: saturate(1.2) contrast(1.06);
+    }
+    .cartItem h4{
+      margin:0;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing:-.2px;
+    }
+    .cartItem p{
+      margin:4px 0 0;
+      font-size: 12px;
+      color: rgba(201,203,211,.75);
+    }
+    .cartItem .right{
+      text-align:right;
+      display:flex;
+      flex-direction:column;
+      gap: 8px;
+      align-items:flex-end;
+    }
+    .miniQty{
+      display:flex; gap:6px; align-items:center;
+    }
+    .miniQty button{
+      width:28px; height:28px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.25);
+      color: var(--text);
+      cursor:pointer;
+    }
+    .miniQty span{ min-width:18px; text-align:center; font-weight:900; font-size: 13px; }
+
+    .drawerFooter{
+      border-top: 1px solid rgba(255,255,255,.10);
+      padding: 14px 16px 16px;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+    .row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-size: 13px;
+      color: rgba(201,203,211,.85);
+    }
+    .row b{ color: var(--text); font-size: 15px; letter-spacing:-.2px; }
+    .checkout{
+      width:100%;
+      justify-content:center;
+      padding: 12px 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,45,45,.30);
+      background: linear-gradient(180deg, rgba(255,45,45,.24), rgba(255,45,45,.12));
+      font-weight: 900;
+    }
+
+    /* Toast */
+    .toast{
+      position:fixed;
+      left: 14px;
+      bottom: 14px;
+      z-index: 80;
+      padding: 12px 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(10,10,14,.70);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow2);
+      display:flex; gap:10px; align-items:center;
+      transform: translateY(16px);
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .22s var(--ease), transform .22s var(--ease);
+      max-width: min(520px, calc(100% - 28px));
+    }
+    .toast.show{ opacity:1; transform: translateY(0); }
+    .toast .ic{
+      width:34px; height:34px; border-radius: 14px;
+      display:grid; place-items:center;
+      border: 1px solid rgba(30,229,139,.30);
+      background: rgba(30,229,139,.12);
+    }
+    .toast b{ display:block; font-size: 13px; }
+    .toast span{ display:block; font-size: 12px; color: rgba(201,203,211,.78); margin-top: 2px; }
+
+    /* Footer */
+    footer{
+      margin-top: 18px;
+      padding: 16px 4px 0;
+      color: rgba(201,203,211,.65);
+      font-size: 12px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    /* Responsive */
+    @media (max-width: 980px){
+      .hero{ grid-template-columns: 1fr; }
+      .stockDots{ position:relative; right:auto; top:auto; margin-top: 12px; width: 100%; height: 160px; }
+      .card{ grid-column: span 6; }
+    }
+    @media (max-width: 640px){
+      .topbar{ flex-wrap:wrap; }
+      .brand{ min-width: auto; }
+      .card{ grid-column: span 12; }
+      .heroStats{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="glow" aria-hidden="true">
+    <div class="blob" style="left:-8%; top:-18%;"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+  </div>
+
+  <div class="wrap">
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <h1>
+          Techleat-superstore.com
+          <span>Fruit & Vegetable Online Store</span>
+        </h1>
+      </div>
+
+      <div class="search" role="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M10.5 18.5a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" stroke-width="2" opacity=".9"/>
+          <path d="M16.5 16.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".9"/>
+        </svg>
+        <input id="q" placeholder="Search for mango, kale, tomatoes..." autocomplete="off" />
+      </div>
+
+      <div class="actions">
+        <button class="btn ghost" id="surpriseBtn" title="Add a surprise item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 22s7-4.5 7-12a4 4 0 0 0-7-2.6A4 4 0 0 0 5 10c0 7.5 7 12 7 12Z" stroke="currentColor" stroke-width="2" opacity=".9"/>
+          </svg>
+          Surprise
+        </button>
+
+        <button class="btn" id="cartBtn" title="Open cart">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 7h15l-1.5 8.5H8L6 7Z" stroke="currentColor" stroke-width="2" opacity=".9"/>
+            <path d="M6 7 5 3H2" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".9"/>
+            <path d="M9 21a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm9 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" fill="currentColor" opacity=".9"/>
+          </svg>
+          Cart <span class="pill" id="cartCount">0</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="heroMain">
+        <div class="stockDots" title="Market-style motion (just for vibes)">
+          <canvas id="dots"></canvas>
+        </div>
+
+        <div class="heroTitle">
+          Bold. Beautiful. <span class="accent2">Fresh.</span><br/>
+          <span class="accent">Shop produce like a power user.</span>
+        </div>
+        <p class="heroSub">
+          Welcome to <b>Techleat-superstore.com</b> — a fruit & vegetable store with a sleek “stock movers” feel.
+          Big images, crisp cards, live search, and a cart that updates instantly.
+        </p>
+
+        <div class="heroRow">
+          <button class="btn cta" id="shopNow">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 3v18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M6 9c2.2-2 4.1-3 6-3s3.8 1 6 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".9"/>
+              <path d="M7 20h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".9"/>
+            </svg>
+            Shop the board
+          </button>
+
+          <button class="btn ghost" id="toggleDeals">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M20 12V7a2 2 0 0 0-2-2h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M4 12v5a2 2 0 0 0 2 2h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".9"/>
+              <path d="M8 8l8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M16 8l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Deals only
+          </button>
+        </div>
+
+        <div class="heroStats">
+          <div class="stat">
+            <b>Same-day freshness</b>
+            <span>Local sourcing + chilled handling</span>
+          </div>
+          <div class="stat">
+            <b>Big, bold photos</b>
+            <span>Because food should look epic</span>
+          </div>
+          <div class="stat">
+            <b>Instant cart</b>
+            <span>No reloads, no lag, just pop</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="heroSide">
+        <div class="sideCard">
+          <h3>Today’s highlights</h3>
+          <p>Trending items update as you browse. Add anything to your cart and watch the “movers” vibe react.</p>
+          <div class="badgeRow">
+            <span class="badge"><span class="dot"></span> Peak Fresh</span>
+            <span class="badge"><span class="dot red"></span> Limited Drops</span>
+            <span class="badge">⚡ Fast Checkout</span>
+          </div>
+        </div>
+
+        <div class="sideCard">
+          <h3>Delivery window</h3>
+          <p id="deliveryLine">Calculating your next delivery slot…</p>
+          <div class="badgeRow">
+            <span class="badge">🥬 Veg-first bundles</span>
+            <span class="badge">🍓 Fruit packs</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FILTERS -->
+    <div class="controls" id="controls">
+      <div class="chips" id="chips">
+        <div class="chip active" data-cat="all">All</div>
+        <div class="chip" data-cat="fruit">Fruits</div>
+        <div class="chip" data-cat="veg">Vegetables</div>
+        <div class="chip" data-cat="herbs">Herbs</div>
+        <div class="chip" data-cat="deals">Deals</div>
+        <div class="chip" data-cat="limited">Limited</div>
+      </div>
+
+      <div class="sort">
+        <select id="sort">
+          <option value="featured">Sort: Featured</option>
+          <option value="price-asc">Price: Low → High</option>
+          <option value="price-desc">Price: High → Low</option>
+          <option value="rating-desc">Rating: High → Low</option>
+          <option value="name-asc">Name: A → Z</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- GRID -->
+    <section class="grid" id="grid" aria-live="polite"></section>
+
+    <footer>
+      <span>© <span id="year"></span> Techleat-superstore.com</span>
+      <span>Tip: use search + chips + sort. Add to cart for instant totals.</span>
+    </footer>
+  </div>
+
+  <!-- CART DRAWER -->
+  <div class="drawerBackdrop" id="backdrop" aria-hidden="true"></div>
+
+  <aside class="drawer" id="drawer" aria-label="Shopping cart">
+    <div class="drawerHeader">
+      <b>Your Cart</b>
+      <button class="btn ghost" id="closeCart" title="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Close
+      </button>
+    </div>
+
+    <div class="cartList" id="cartList"></div>
+
+    <div class="drawerFooter">
+      <div class="row"><span>Subtotal</span><b id="sub">$0.00</b></div>
+      <div class="row"><span>Delivery</span><b id="ship">$0.00</b></div>
+      <div class="row"><span>Total</span><b id="total">$0.00</b></div>
+      <button class="btn checkout" id="checkoutBtn">Checkout (demo)</button>
+    </div>
+  </aside>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <div class="ic" aria-hidden="true">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div>
+      <b id="toastTitle">Added to cart</b>
+      <span id="toastBody">Nice pick.</span>
+    </div>
+  </div>
+
+  <script>
+    // ---------- Data (big bold images via Unsplash) ----------
+
+let products = [];
+const grid = document.getElementById("grid");
+
+function stars(rating) {
+  let s = "";
+  for (let i = 1; i <= 5; i++) {
+    s += i <= Math.round(rating) ? "★" : "☆";
+  }
+  return s;
+}
+
+function renderProducts() {
+  grid.innerHTML = "";
+
+  products.forEach(p => {
+    const card = document.createElement("article");
+    card.className = "card";
+
+    card.innerHTML = `
+      <div class="imgWrap">
+        <img src="${p.image}?auto=format&fit=crop&w=1200&q=80" alt="${p.name}">
+        <div class="tag ${p.tag}">${p.tag.toUpperCase()}</div>
+      </div>
+
+      <div class="content">
+        <h3 class="name">${p.name}</h3>
+        <div class="meta">${p.cat.toUpperCase()} • ${p.unit}</div>
+
+        <div class="ratingRow">
+          <div class="stars">${stars(p.rating)}</div>
+          <div class="stock ${p.stock < 10 ? "low" : ""}">
+            ${p.stock} in stock
+          </div>
+        </div>
+
+        <div class="price">$${p.price.toFixed(2)}</div>
+
+        <button class="btn add">Add to Cart</button>
+      </div>
+    `;
+
+    grid.appendChild(card);
+  });
+}
+
+async function loadProducts() {
+  try {
+    const res = await fetch("http://localhost:8000/api/products");
+    products = await res.json();
+    renderProducts();
+  } catch (err) {
+    console.error("Failed to load products", err);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", loadProducts);
+
+grid.addEventListener("click", (e) => {
+  if (!e.target.classList.contains("add")) return;
+
+  const card = e.target.closest(".card");
+  if (!card) return;
+
+  const productId = card.dataset.id;
+  const product = products.find(p => p.id === productId);
+
+  console.log("Add to cart clicked:", product);
+  addToCart(product);
+});
+
+
+
+
+    // ---------- State ----------
+    const state = {
+      q: "",
+      cat: "all",
+      sort: "featured",
+      dealsOnly: false,
+      qtyDraft: Object.fromEntries(products.map(p => [p.id, 1])),
+      cart: new Map(), // id -> qty
+    };
+
+    // ---------- Helpers ----------
+    const $ = (sel, root=document) => root.querySelector(sel);
+    const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
+    const money = (n) => `$${n.toFixed(2)}`;
+    const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+
+    function stars(r){
+      const full = Math.floor(r);
+      const half = (r - full) >= 0.5;
+      let s = "";
+      for(let i=0;i<5;i++){
+        if(i < full) s += "★";
+        else if(i === full && half) s += "⯪";
+        else s += "☆";
+      }
+      return s;
+    }
+
+    function computeShipping(subtotal){
+      // small "rich" feel: shipping scales; free over $35
+      if(subtotal === 0) return 0;
+      if(subtotal >= 35) return 0;
+      return Math.max(3.99, subtotal * 0.08);
+    }
+
+    function toast(title, body){
+      const t = $("#toast");
+      $("#toastTitle").textContent = title;
+      $("#toastBody").textContent = body;
+      t.classList.add("show");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(()=> t.classList.remove("show"), 2400);
+    }
+
+    // ---------- Render grid ----------
+    function filteredProducts(){
+      let list = [...products];
+   
+
+      // deals toggle
+      if(state.dealsOnly) list = list.filter(p => p.tag === "deal" || p.deal);
+
+      // category chips
+      if(state.cat === "deals") list = list.filter(p => p.tag === "deal" || p.deal);
+      else if(state.cat === "limited") list = list.filter(p => p.tag === "limited");
+      else if(state.cat !== "all") list = list.filter(p => p.cat === state.cat);
+
+      // query
+      const q = state.q.trim().toLowerCase();
+      if(q){
+        list = list.filter(p =>
+          p.name.toLowerCase().includes(q) ||
+          p.cat.toLowerCase().includes(q) ||
+          (p.tag || "").toLowerCase().includes(q)
+        );
+      }
+
+      // sort
+      const sorter = {
+        "featured": (a,b) => (b.rating - a.rating) || (a.price - b.price),
+        "price-asc": (a,b) => a.price - b.price,
+        "price-desc": (a,b) => b.price - a.price,
+        "rating-desc": (a,b) => b.rating - a.rating,
+        "name-asc": (a,b) => a.name.localeCompare(b.name),
+      }[state.sort] || ((a,b)=>0);
+
+      list.sort(sorter);
+      return list;
+    }
+
+    function renderGrid(){
+      const grid = $("#grid");
+      const list = filteredProducts();
+
+      grid.innerHTML = list.map(p => {
+
+    
+        const tagCls = p.tag === "hot" ? "hot" : (p.tag === "fresh" ? "fresh" : (p.tag === "deal" ? "deal" : ""));
+        const tagLabel = p.tag === "hot" ? "HOT" : (p.tag === "fresh" ? "FRESH" : (p.tag === "deal" ? "DEAL" : (p.tag === "limited" ? "LIMITED" : "")));
+        const low = p.stock <= 10;
+
+        const old = p.deal ? `<small>${money(p.deal)}</small>` : "";
+        const qty = state.qtyDraft[p.id] ?? 1;
+
+        return `
+          <article class="card" data-id="${p.id}">
+            <div class="imgWrap">
+              <img src="${p.image}" alt="${p.name}" loading="lazy" />
+              <div class="shine"></div>
+              ${tagLabel ? `<div class="tag ${tagCls}">${tagLabel}</div>` : ""}
+            </div>
+
+            <div class="content">
+              <div class="titleRow">
+                <div>
+                  <h3 class="name">${p.name}</h3>
+                  <div class="meta">${p.cat.toUpperCase()} • ${p.unit}</div>
+                </div>
+                <div class="price">
+                  ${money(p.price)}
+                  ${old}
+                </div>
+              </div>
+
+              <div class="ratingRow">
+                <div class="stars" title="Rating ${p.rating}">${stars(p.rating)} <span style="color:rgba(201,203,211,.75); margin-left:6px;">${p.rating.toFixed(1)}</span></div>
+                <div class="stock ${low ? "low":""}">
+                  <i></i> ${low ? "Low stock" : "In stock"} • ${p.stock}
+                </div>
+              </div>
+
+              <div class="cardActions">
+                <div class="qty" aria-label="Quantity selector">
+                  <button class="dec" title="Decrease">−</button>
+                  <span class="qv">${qty}</span>
+                  <button class="inc" title="Increase">+</button>
+                </div>
+                <button class="btn add" title="Add to cart">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                  Add
+                </button>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      // Bind events (card-level)
+      $$(".card", grid).forEach(card => {
+        const id = card.dataset.id;
+        const qv = $(".qv", card);
+        const dec = $(".dec", card);
+        const inc = $(".inc", card);
+        const add = $(".add", card);
+
+        const setQty = (v) => {
+          const nv = clamp(v, 1, 20);
+          state.qtyDraft[id] = nv;
+          qv.textContent = nv;
+        };
+
+        dec.addEventListener("click", (e)=>{ e.stopPropagation(); setQty((state.qtyDraft[id]||1) - 1); });
+        inc.addEventListener("click", (e)=>{ e.stopPropagation(); setQty((state.qtyDraft[id]||1) + 1); });
+
+        add.addEventListener("click", (e)=>{
+          e.stopPropagation();
+          addToCart(id, state.qtyDraft[id] || 1);
+        });
+
+        card.addEventListener("dblclick", ()=>{
+          // double-click quick add
+          addToCart(id, 1);
+        });
+      });
+    }
+
+    // ---------- Cart ----------
+    function addToCart(id, qty=1){
+      const cur = state.cart.get(id) || 0;
+      state.cart.set(id, cur + qty);
+      updateCartUI();
+      const p = products.find(x => x.id === id);
+      toast("Added to cart", `${p.name} × ${qty}`);
+      pulseDots(); // react like "movers"
+    }
+
+    function setCartQty(id, qty){
+      if(qty <= 0) state.cart.delete(id);
+      else state.cart.set(id, qty);
+      updateCartUI();
+      pulseDots();
+    }
+
+    function cartTotals(){
+      let subtotal = 0;
+      for(const [id, qty] of state.cart.entries()){
+        const p = products.find(x => x.id === id);
+        if(p) subtotal += p.price * qty;
+      }
+      const ship = computeShipping(subtotal);
+      const total = subtotal + ship;
+      return { subtotal, ship, total };
+    }
+
+    function updateCartUI(){
+      // count
+      let count = 0;
+      for(const q of state.cart.values()) count += q;
+      $("#cartCount").textContent = count;
+
+      // list
+      const list = $("#cartList");
+      if(count === 0){
+        list.innerHTML = `
+          <div class="sideCard" style="margin-top:6px;">
+            <h3>Your cart is empty</h3>
+            <p>Double-click a product card to quick-add, or hit “Surprise” for a random pick.</p>
+            <div class="badgeRow">
+              <span class="badge"><span class="dot"></span> Fresh picks</span>
+              <span class="badge"><span class="dot red"></span> Limited drops</span>
+            </div>
+          </div>
+        `;
+      } else {
+        list.innerHTML = [...state.cart.entries()].map(([id, qty])=>{
+          const p = products.find(x => x.id === id);
+          const line = p.price * qty;
+          return `
+            <div class="cartItem" data-id="${id}">
+              <img src="${p.img}" alt="${p.name}" loading="lazy" />
+              <div>
+                <h4>${p.name}</h4>
+                <p>${money(p.price)} • ${p.unit}</p>
+              </div>
+              <div class="right">
+                <div style="font-weight:900;">${money(line)}</div>
+                <div class="miniQty">
+                  <button class="mdec" title="Decrease">−</button>
+                  <span class="mq">${qty}</span>
+                  <button class="minc" title="Increase">+</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        $$(".cartItem", list).forEach(row=>{
+          const id = row.dataset.id;
+          const mdec = $(".mdec", row);
+          const minc = $(".minc", row);
+          mdec.addEventListener("click", ()=> setCartQty(id, (state.cart.get(id)||1) - 1));
+          minc.addEventListener("click", ()=> setCartQty(id, (state.cart.get(id)||0) + 1));
+        });
+      }
+
+      // totals
+      const { subtotal, ship, total } = cartTotals();
+      $("#sub").textContent = money(subtotal);
+      $("#ship").textContent = ship === 0 ? "FREE" : money(ship);
+      $("#total").textContent = money(total);
+    }
+
+    // ---------- Controls ----------
+    function bindControls(){
+      $("#q").addEventListener("input", (e)=>{
+        state.q = e.target.value;
+        renderGrid();
+      });
+
+      $$(".chip", $("#chips")).forEach(ch => {
+        ch.addEventListener("click", ()=>{
+          $$(".chip", $("#chips")).forEach(x=>x.classList.remove("active"));
+          ch.classList.add("active");
+          state.cat = ch.dataset.cat;
+          renderGrid();
+        });
+      });
+
+      $("#sort").addEventListener("change", (e)=>{
+        state.sort = e.target.value;
+        renderGrid();
+      });
+
+      $("#toggleDeals").addEventListener("click", ()=>{
+        state.dealsOnly = !state.dealsOnly;
+        $("#toggleDeals").style.borderColor = state.dealsOnly ? "rgba(255,204,102,.40)" : "";
+        $("#toggleDeals").style.background = state.dealsOnly
+          ? "linear-gradient(180deg, rgba(255,204,102,.20), rgba(255,204,102,.10))"
+          : "";
+        toast(state.dealsOnly ? "Deals enabled" : "Deals off", state.dealsOnly ? "Showing discounted picks." : "Showing all items.");
+        renderGrid();
+      });
+
+      $("#shopNow").addEventListener("click", ()=>{
+        $("#controls").scrollIntoView({ behavior:"smooth", block:"start" });
+      });
+
+      $("#surpriseBtn").addEventListener("click", ()=>{
+        const list = filteredProducts();
+        const pick = list[Math.floor(Math.random() * list.length)] || products[Math.floor(Math.random() * products.length)];
+        addToCart(pick.id, 1);
+      });
+
+      // drawer
+      const open = ()=>{ $("#drawer").classList.add("show"); $("#backdrop").classList.add("show"); };
+      const close= ()=>{ $("#drawer").classList.remove("show"); $("#backdrop").classList.remove("show"); };
+
+      $("#cartBtn").addEventListener("click", open);
+      $("#closeCart").addEventListener("click", close);
+      $("#backdrop").addEventListener("click", close);
+      window.addEventListener("keydown", (e)=>{ if(e.key === "Escape") close(); });
+
+      $("#checkoutBtn").addEventListener("click", ()=>{
+        const { total } = cartTotals();
+        if(total <= 0){
+          toast("Cart empty", "Add something tasty first.");
+          return;
+        }
+        toast("Checkout (demo)", `Total: ${money(total)} — this is a front-end demo.`);
+      });
+    }
+
+    // ---------- “Stock mover” dot canvas ----------
+    const dotState = {
+      t: 0,
+      pulse: 0,
+      dir: 1,
+      lastPulseAt: 0,
+    };
+
+    function pulseDots(){
+      dotState.pulse = 1;
+      dotState.lastPulseAt = performance.now();
+    }
+
+    function drawDots(){
+      const c = $("#dots");
+      const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      const rect = c.getBoundingClientRect();
+      c.width = Math.floor(rect.width * dpr);
+      c.height = Math.floor(rect.height * dpr);
+      const ctx = c.getContext("2d");
+      ctx.scale(dpr, dpr);
+
+      const w = rect.width;
+      const h = rect.height;
+
+      function frame(now){
+        dotState.t += 0.012;
+
+        // background
+        ctx.clearRect(0,0,w,h);
+        ctx.fillStyle = "rgba(0,0,0,.78)";
+        roundRect(ctx, 0,0,w,h, 20);
+        ctx.fill();
+
+        // subtle sheen
+        const g = ctx.createRadialGradient(w*0.25, h*0.2, 10, w*0.25, h*0.2, Math.max(w,h));
+        g.addColorStop(0, "rgba(255,255,255,.10)");
+        g.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = g;
+        ctx.fillRect(0,0,w,h);
+
+        // pulse decay
+        const dt = Math.min(1, (now - dotState.lastPulseAt) / 400);
+        const pulse = dotState.pulse * (1 - dt);
+        if(dt >= 1) dotState.pulse = 0;
+
+        // grid of dots
+        const cols = 18, rows = 14;
+        const pad = 14;
+        const gx = (w - pad*2) / (cols-1);
+        const gy = (h - pad*2) / (rows-1);
+
+        const mid = Math.floor(cols/2);
+
+        for(let y=0;y<rows;y++){
+          for(let x=0;x<cols;x++){
+            // create "up" (green) on left, "down" (red) on right, like stock movers
+            const side = x < mid ? -1 : 1;
+            const phase = dotState.t + y*0.22 + x*0.1;
+
+            // wave amplitude influenced by cart size
+            const cartSize = Number($("#cartCount").textContent) || 0;
+            const amp = 0.35 + Math.min(1.25, cartSize * 0.06) + pulse*0.6;
+            const v = Math.sin(phase) * amp;
+
+            // brightness
+            const base = 0.35 + (0.5 + 0.5*Math.sin(phase*1.3)) * 0.55;
+            const b = clamp(base + Math.abs(v)*0.35, 0.15, 1);
+
+            const r = 3.1 + b*1.9;
+
+            const px = pad + x*gx;
+            const py = pad + y*gy;
+
+            // tint
+            let color;
+            if(side < 0){
+              // green
+              const gg = Math.floor(180 + b*60);
+              const rr = Math.floor(20 + b*25);
+              const bb = Math.floor(40 + b*35);
+              color = `rgba(${rr},${gg},${bb},${0.35 + b*0.55})`;
+            } else {
+              // red
+              const rr = Math.floor(190 + b*65);
+              const gg = Math.floor(25 + b*30);
+              const bb = Math.floor(35 + b*35);
+              color = `rgba(${rr},${gg},${bb},${0.35 + b*0.55})`;
+            }
+
+            // cutout pattern to mimic “arrows”
+            const arrowMask = (x < mid)
+              ? (y < rows/2 ? (x + y) % 3 !== 0 : (x + (rows-y)) % 3 !== 0)
+              : (y < rows/2 ? (x + (rows-y)) % 3 !== 0 : (x + y) % 3 !== 0);
+
+            if(!arrowMask) continue;
+
+            ctx.beginPath();
+            ctx.fillStyle = color;
+            ctx.arc(px, py, r, 0, Math.PI*2);
+            ctx.fill();
+          }
+        }
+
+        // border
+        ctx.strokeStyle = "rgba(255,255,255,.10)";
+        ctx.lineWidth = 1;
+        roundRect(ctx, .5,.5,w-1,h-1, 20);
+        ctx.stroke();
+
+        requestAnimationFrame(frame);
+      }
+
+      requestAnimationFrame(frame);
+    }
+
+    function roundRect(ctx, x, y, w, h, r){
+      const rr = Math.min(r, w/2, h/2);
+      ctx.beginPath();
+      ctx.moveTo(x+rr,y);
+      ctx.arcTo(x+w,y, x+w,y+h, rr);
+      ctx.arcTo(x+w,y+h, x,y+h, rr);
+      ctx.arcTo(x,y+h, x,y, rr);
+      ctx.arcTo(x,y, x+w,y, rr);
+      ctx.closePath();
+    }
+
+    // ---------- Delivery line ----------
+    function setDeliveryLine(){
+      const now = new Date();
+      const mins = now.getMinutes();
+      const add = mins < 30 ? 60 : 90;
+      const eta = new Date(now.getTime() + add*60000);
+      const hh = eta.getHours();
+      const mm = String(eta.getMinutes()).padStart(2,"0");
+      const ampm = hh >= 12 ? "PM" : "AM";
+      const h12 = ((hh + 11) % 12) + 1;
+      $("#deliveryLine").textContent = `Next available delivery: Today • ${h12}:${mm} ${ampm} (est.)`;
+    }
+
+    // ---------- Init ----------
+    function init(){
+      $("#year").textContent = new Date().getFullYear();
+      setDeliveryLine();
+      bindControls();
+      renderGrid();
+      updateCartUI();
+      drawDots();
+
+      // Resize canvas on window changes
+      window.addEventListener("resize", ()=>{
+        // quick redraw by restarting
+        drawDots();
+      });
+
+      // A tiny “alive” touch: pulse occasionally
+      setInterval(()=> pulseDots(), 5200);
+    }
+    init();
+  </script>
+</body>
+</html>
