@@ -12,10 +12,10 @@ resource "aws_db_subnet_group" "main" {
 resource "aws_db_instance" "postgres" {
   identifier             = "production-postgres"
   engine                 = "postgres"
-  engine_version         = "14.9"
+  engine_version         = "14.13"
   instance_class         = "db.t3.micro"
   allocated_storage      = 20
-  storage_encrypted      = true
+  storage_encrypted      = false
   
   db_name  = var.db_name
   username = var.db_username
@@ -24,19 +24,23 @@ resource "aws_db_instance" "postgres" {
   db_subnet_group_name   = aws_db_subnet_group.main.name
   vpc_security_group_ids = [aws_security_group.rds.id]
   
-  backup_retention_period = 7
-  backup_window          = "03:00-04:00"
+  backup_retention_period = 0 
+  backup_window          = null
   maintenance_window     = "mon:04:00-mon:05:00"
   
-  multi_az               = true
+  multi_az               = false
   publicly_accessible    = false
-  skip_final_snapshot    = false
-  final_snapshot_identifier = "production-postgres-final-snapshot"
+  skip_final_snapshot    = true
+
+  enabled_cloudwatch_logs_exports = []
   
-  enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
+  performance_insights_enabled = false
+  
+  deletion_protection = false
 
   tags = {
     Name        = "Production PostgreSQL"
     Environment = "production"
+    Tier        = "Free"
   }
 }
