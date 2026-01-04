@@ -4,7 +4,17 @@ data "aws_ami" "web_server" {
 
   filter {
     name   = "name"
-    values = ["web-server-AMI"]
+    values = ["web-server-AMI-*"]
+  }
+  
+  filter {
+    name   = "state"
+    values = ["available"]
+  }
+  
+  filter {
+    name   = "tag:Name"
+    values = ["WebServerAMI"]
   }
 }
 
@@ -14,11 +24,21 @@ data "aws_ami" "backend_server" {
 
   filter {
     name   = "name"
-    values = ["backend-server-AMI"]
+    values = ["backend-server-AMI-*"]
+  }
+  
+  filter {
+    name   = "state"
+    values = ["available"]
+  }
+  
+  filter {
+    name   = "tag:Name"
+    values = ["BackendServerAMI"]
   }
 }
 
-# Web Server Instances
+
 resource "aws_instance" "web_server_1" {
   ami           = data.aws_ami.web_server.id
   instance_type = var.instance_type
@@ -35,6 +55,8 @@ resource "aws_instance" "web_server_1" {
     Name = "web-server-az1"
     Tier = "Web"
   }
+  
+  depends_on = [aws_lb.backend]
 }
 
 resource "aws_instance" "web_server_2" {
@@ -53,6 +75,8 @@ resource "aws_instance" "web_server_2" {
     Name = "web-server-az2"
     Tier = "Web"
   }
+  
+  depends_on = [aws_lb.backend]
 }
 
 # Backend Server Instances
@@ -75,6 +99,11 @@ resource "aws_instance" "backend_server_1" {
     Name = "backend-server-az1"
     Tier = "Application"
   }
+  
+  depends_on = [
+    aws_db_instance.postgres,
+    aws_nat_gateway.nat_1
+  ]
 }
 
 resource "aws_instance" "backend_server_2" {
@@ -96,4 +125,9 @@ resource "aws_instance" "backend_server_2" {
     Name = "backend-server-az2"
     Tier = "Application"
   }
+  
+  depends_on = [
+    aws_db_instance.postgres,
+    aws_nat_gateway.nat_1
+  ]
 }
