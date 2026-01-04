@@ -1,0 +1,8 @@
+aws_region    = "eu-west-1"
+instance_type = "c7i-flex.large"
+key_name      = "aws-key"
+admin_ip      = "will_be_fixed_by_jenkins" 
+db_name     = "productsdb"
+db_username = "dbadmin"
+db_password = "phil@Password%"
+domain_name = ""
