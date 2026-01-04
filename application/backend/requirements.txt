@@ -1,6 +1,6 @@
 fastapi
 uvicorn[standard]
 SQLAlchemy==2.0.36
-psycopg[binary]==3.2.3
+psycopg[binary]
 python-multipart==0.0.12
 python-dotenv==1.0.0
