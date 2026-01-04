@@ -2,9 +2,9 @@ pipeline {
     agent any
     
     environment {
-        AWS_SECRET_ACCESS_KEY = credentials ('AWS_SECRET_ACCESS_KEY')
-        AWS_ACCESS_KEY_ID = credentials ('AWS_ACCESS_KEY_ID')
-        AWS_DEFAULT_REGION = 'eu-west-1'
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+        AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
+        AWS_REGION = 'eu-west-1'
     }
     
     parameters {
@@ -34,7 +34,7 @@ pipeline {
 
                     dir('terraform') {
                         sh """
-                            sed -i 's/admin_ip\\s*=.*/admin_ip = \"${adminIp}\\/32\"/' phil.tfvars
+                            sed -i 's|admin_ip\\s*=.*|admin_ip = \"${adminIp}/32\"|' phil.tfvars
                         """
                     }
                 }
@@ -48,16 +48,16 @@ pipeline {
             steps {
                 script {
                     dir('packer') {
-                        echo 'Building Web Server AMI...'
-                        sh '''
-                            packer init web-server.pkr.hcl
-                            packer build -var "aws_region=${AWS_REGION}" web-server.pkr.hcl
-                        '''
-                        
                         echo 'Building Backend Server AMI...'
                         sh '''
                             packer init backend-server.pkr.hcl
                             packer build -var "aws_region=${AWS_REGION}" backend-server.pkr.hcl
+                        '''
+                        
+                        echo 'Building Web Server AMI...'
+                        sh '''
+                            packer init web-server.pkr.hcl
+                            packer build -var "aws_region=${AWS_REGION}" web-server.pkr.hcl
                         '''
                     }
                 }
@@ -72,13 +72,13 @@ pipeline {
             }
         }
 
-        stage ('Terraform Validate'){
-                steps{
-                    dir('terraform'){
-                        sh 'terraform validate'
-                    }
+        stage('Terraform Validate') {
+            steps {
+                dir('terraform') {
+                    sh 'terraform validate'
                 }
             }
+        }
         
         stage('Terraform Plan') {
             when {
@@ -114,19 +114,16 @@ pipeline {
                             returnStdout: true
                         ).trim()
                         
-                        def backendIps = sh(
-                            script: 'terraform output -json backend_server_ips',
-                            returnStdout: true
-                        ).trim()
-                        
                         def webIps = sh(
                             script: 'terraform output -json web_server_ips',
                             returnStdout: true
                         ).trim()
                         
                         env.DB_ENDPOINT = dbEndpoint
-                        env.BACKEND_IPS = backendIps
                         env.WEB_IPS = webIps
+                        
+                        echo "Database Endpoint: ${dbEndpoint}"
+                        echo "Web Server IPs: ${webIps}"
                     }
                 }
             }
@@ -150,37 +147,13 @@ pipeline {
                     ).trim()
                     
                     def (dbUser, dbPass, dbName) = dbCreds.split(':')
-                    
-                    echo 'Deploying backend application...'
-                    sh """
-                        for ip in \$(echo '${env.BACKEND_IPS}' | jq -r '.[]'); do
-                            echo "Deploying to backend server: \$ip"
-                            
-                            scp -o StrictHostKeyChecking=no -r application/backend/* ec2-user@\$ip:/home/ec2-user/app/
-                            
-                            ssh -o StrictHostKeyChecking=no ec2-user@\$ip "cat > /home/ec2-user/app/.env << 'ENVEOF'
-DB_HOST=${env.DB_ENDPOINT}
-DB_NAME=${dbName}
-DB_USER=${dbUser}
-DB_PASSWORD=${dbPass}
-ENVEOF"
-                            
-                            ssh ec2-user@\$ip 'cd /home/ec2-user/app && pip install -r requirements.txt'
-                            ssh ec2-user@\$ip 'sudo systemctl restart backend-api'
-                            ssh ec2-user@\$ip 'sudo systemctl enable backend-api'
-                            
-                            echo "Backend server \$ip deployed successfully"
-                        done
-                    """
-                    
-                    echo 'Deploying frontend application...'
+                    echo 'Deploying frontend to web servers...'
                     sh """
                         for ip in \$(echo '${env.WEB_IPS}' | jq -r '.[]'); do
                             echo "Deploying to web server: \$ip"
                             
                             scp -o StrictHostKeyChecking=no -r application/frontend/* ec2-user@\$ip:/usr/share/nginx/html/
                             
-                            # Reload nginx
                             ssh -o StrictHostKeyChecking=no ec2-user@\$ip 'sudo systemctl reload nginx'
                             
                             echo "Web server \$ip deployed successfully"
@@ -197,7 +170,7 @@ ENVEOF"
             steps {
                 dir('terraform') {
                     input message: 'Are you sure you want to destroy?', ok: 'Destroy'
-                    sh 'terraform destroy -auto-approve'
+                    sh 'terraform destroy -var-file="phil.tfvars" -auto-approve'
                 }
             }
         }
@@ -215,6 +188,8 @@ ENVEOF"
                     
                     echo "Application deployed successfully!"
                     echo "Access your application at: http://${albDns}"
+                    echo ""
+                    echo "Test the backend API at: http://${albDns}/api/products"
                 }
             }
         }

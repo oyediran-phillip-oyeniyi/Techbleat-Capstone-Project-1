@@ -1,5 +1,6 @@
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List 
+import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,9 +13,12 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
 # -----------------------------
 # DATABASE CONFIG
 # -----------------------------
-DATABASE_URL = (
-    "postgresql+psycopg://user:pass@db.server:5432/postgres"
-)
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_NAME = os.getenv("DB_NAME", "postgres")
+DB_USER = os.getenv("DB_USER", "postgres")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "postgres")
+
+DATABASE_URL = f"postgresql+psycopg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/{DB_NAME}"
 
 engine = create_engine(
     DATABASE_URL,
@@ -36,27 +40,18 @@ class Product(Base):
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
-
-    # UI expects: fruit | veg | herbs
     cat: Mapped[str] = mapped_column(String(40), nullable=False)
-
     price: Mapped[float] = mapped_column(Float, nullable=False)
     unit: Mapped[str] = mapped_column(String(40), nullable=False)
-
     rating: Mapped[float] = mapped_column(Float, nullable=False, default=4.5)
     stock: Mapped[int] = mapped_column(Integer, nullable=False, default=20)
-
-    # hot | fresh | deal | limited | ""
     tag: Mapped[str] = mapped_column(String(40), nullable=False, default="")
-
     image: Mapped[str] = mapped_column(String(600), nullable=False)
-
     deal: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
 
 # -----------------------------
 # INITIAL DATA
 # -----------------------------
-
 def seed_data():
     with Session(engine) as session:
         if session.execute(select(Product.id).limit(1)).first():
@@ -301,6 +296,11 @@ def get_products():
             for p in rows
         ]
 
+# CRITICAL: Add health check endpoint for load balancer
+@app.get("/api/health")
+def health_check():
+    return {"status": "healthy", "service": "backend-api"}
+
 @app.get("/", response_class=HTMLResponse)
 def index():
-    return Path("index.html").read_text(encoding="utf-8")
+    return "<h1>Backend API is running</h1><p>Visit /api/products for data</p>"

@@ -13,12 +13,12 @@ variable "aws_region" {
 }
 
 variable "instance_type" {
-    type = string
-    default = "c7i-flex.large"
+  type    = string
+  default = "c7i-flex.large"
 }
 
 source "amazon-ebs" "nginx_web" {
-  ami_name      = "web-server-AMI"
+  ami_name      = "web-server-AMI-{{timestamp}}"
   instance_type = var.instance_type
   region        = var.aws_region
   
@@ -38,6 +38,7 @@ source "amazon-ebs" "nginx_web" {
     Name        = "WebServerAMI"
     Environment = "Production"
     ManagedBy   = "Packer"
+    BuildDate   = "{{timestamp}}"
   }
 }
 
@@ -48,16 +49,21 @@ build {
     script = "scripts/install-nginx.sh"
   }
   
-//   provisioner "file" {
+  provisioner "file" {
+    source      = "../application/frontend/"
+    destination = "/tmp/frontend"
+  }
+  
+  provisioner "file" {
     source      = "../nginx/default.conf"
     destination = "/tmp/default.conf"
   }
   
   provisioner "shell" {
     inline = [
-      "sudo yum update -y",
-      "sudo yum install -y certbot python3-certbot-nginx",
-      "sudo mv /tmp/default.conf /etc/nginx/conf.d/",
+      "sudo mv /tmp/frontend/* /usr/share/nginx/html/",
+      "sudo chown -R nginx:nginx /usr/share/nginx/html/",
+      "sudo mv /tmp/default.conf /etc/nginx/conf.d/default.conf",
       "sudo systemctl enable nginx"
     ]
   }

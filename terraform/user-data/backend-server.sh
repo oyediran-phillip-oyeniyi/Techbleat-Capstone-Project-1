@@ -1,23 +1,12 @@
 #!/bin/bash
 set -e
-
-# Create application directory
-cd /home/ec2-user/app
-
-# Clone application code (replace with your repo)
-# git clone https://github.com/your-repo/app.git .
-
-# For now, we'll assume code is deployed separately
-# Create .env file
-cat > .env << EOF
+cat > /home/ec2-user/app/.env << EOF
 DB_HOST=${db_host}
 DB_NAME=${db_name}
 DB_USER=${db_user}
 DB_PASSWORD=${db_password}
 EOF
-
-pip install fastapi uvicorn psycopg python-dotenv
-
+chmod 600 /home/ec2-user/app/.env
 cat > /etc/systemd/system/backend-api.service << 'EOF'
 [Unit]
 Description=FastAPI Backend Service
@@ -29,7 +18,7 @@ User=ec2-user
 WorkingDirectory=/home/ec2-user/app
 Environment="PATH=/usr/local/bin:/usr/bin:/bin"
 EnvironmentFile=/home/ec2-user/app/.env
-ExecStart=/usr/bin/python3 -m uvicorn main:app --host 0.0.0.0 --port 8000
+ExecStart=/usr/local/bin/uvicorn main:app --host 0.0.0.0 --port 8000
 Restart=always
 RestartSec=10
 
@@ -38,4 +27,7 @@ WantedBy=multi-user.target
 EOF
 
 systemctl daemon-reload
-echo "Backend server environment configured"
+systemctl start backend-api
+systemctl enable backend-api
+
+echo "Backend API service started"

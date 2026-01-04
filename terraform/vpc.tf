@@ -73,28 +73,12 @@ resource "aws_eip" "nat_1" {
   }
 }
 
-resource "aws_eip" "nat_2" {
-  domain = "vpc"
-  tags = {
-    Name = "nat-eip-az2"
-  }
-}
-
 resource "aws_nat_gateway" "nat_1" {
   allocation_id = aws_eip.nat_1.id
   subnet_id     = aws_subnet.public_1.id
 
   tags = {
     Name = "nat-gateway-az1"
-  }
-}
-
-resource "aws_nat_gateway" "nat_2" {
-  allocation_id = aws_eip.nat_2.id
-  subnet_id     = aws_subnet.public_2.id
-
-  tags = {
-    Name = "nat-gateway-az2"
   }
 }
 
@@ -129,7 +113,7 @@ resource "aws_route_table" "private_2" {
 
   route {
     cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat_2.id
+    nat_gateway_id = aws_nat_gateway.nat_1.id
   }
 
   tags = {
