@@ -50,7 +50,7 @@ build {
   }
   
   provisioner "file" {
-    source      = "../application/frontend/"
+    source      = "../application/frontend"
     destination = "/tmp/frontend"
   }
   
@@ -62,15 +62,11 @@ build {
   provisioner "shell" {
     inline = [
       "set -e",
-      "echo 'Setting up frontend files...'",
       "sudo cp -r /tmp/frontend/. /usr/share/nginx/html/",
       "sudo chown -R nginx:nginx /usr/share/nginx/html/",
-      "echo 'Setting up Nginx configuration...'",
       "sudo cp /tmp/default.conf /etc/nginx/conf.d/default.conf",
       "sudo chown root:root /etc/nginx/conf.d/default.conf",
-      "echo 'Testing Nginx configuration...'",
       "sudo nginx -t",
-      "echo 'Enabling Nginx...'",
       "sudo systemctl enable nginx",
       "echo 'Web server setup completed'"
     ]

@@ -57,11 +57,9 @@ build {
   provisioner "shell" {
     inline = [
       "set -e",
-      "echo 'Setting up application directory...'",
       "sudo mkdir -p /home/ec2-user/app",
       "sudo cp -r /tmp/backend/. /home/ec2-user/app/",
       "sudo chown -R ec2-user:ec2-user /home/ec2-user/app",
-      "echo 'Installing Python dependencies...'",
       "cd /home/ec2-user/app",
       "pip3 install --user -r requirements.txt",
       "echo 'Backend application setup completed'"
@@ -71,7 +69,6 @@ build {
   provisioner "shell" {
     inline = [
       "set -e",
-      "echo 'Creating systemd service...'",
       "sudo tee /etc/systemd/system/backend-api.service > /dev/null <<'EOF'",
       "[Unit]",
       "Description=FastAPI Backend Service",
