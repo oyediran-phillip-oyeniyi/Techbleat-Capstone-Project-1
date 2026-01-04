@@ -61,10 +61,18 @@ build {
   
   provisioner "shell" {
     inline = [
-      "sudo mv /tmp/frontend/* /usr/share/nginx/html/",
+      "set -e",
+      "echo 'Setting up frontend files...'",
+      "sudo cp -r /tmp/frontend/. /usr/share/nginx/html/",
       "sudo chown -R nginx:nginx /usr/share/nginx/html/",
-      "sudo mv /tmp/default.conf /etc/nginx/conf.d/default.conf",
-      "sudo systemctl enable nginx"
+      "echo 'Setting up Nginx configuration...'",
+      "sudo cp /tmp/default.conf /etc/nginx/conf.d/default.conf",
+      "sudo chown root:root /etc/nginx/conf.d/default.conf",
+      "echo 'Testing Nginx configuration...'",
+      "sudo nginx -t",
+      "echo 'Enabling Nginx...'",
+      "sudo systemctl enable nginx",
+      "echo 'Web server setup completed'"
     ]
   }
 }
