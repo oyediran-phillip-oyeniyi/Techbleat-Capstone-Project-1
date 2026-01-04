@@ -50,8 +50,8 @@ build {
   }
   
   provisioner "file" {
-    source      = "../application/backend/"
-    destination = "/tmp/"
+    source      = "../application/backend"
+    destination = "/tmp/backend"
   }
   
   provisioner "shell" {
