@@ -66,7 +66,7 @@ build {
       "sudo chown -R nginx:nginx /usr/share/nginx/html/",
       "sudo cp /tmp/default.conf /etc/nginx/conf.d/default.conf",
       "sudo chown root:root /etc/nginx/conf.d/default.conf",
-      "sudo nginx -t",
+      "sudo cp /tmp/default.conf /etc/nginx/conf.d/default.conf",
       "sudo systemctl enable nginx",
       "echo 'Web server setup completed'"
     ]
