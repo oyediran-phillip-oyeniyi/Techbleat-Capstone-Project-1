@@ -166,6 +166,42 @@ pipeline {
                 }
             }
         }
+
+        stage('Configure Nginx') {
+            when {
+                expression { params.ACTION == 'apply' }
+            }
+            steps {
+                script {                   
+                    def backendAlbDns = sh(
+                        script: 'cd terraform && terraform output -raw backend_alb_dns',
+                        returnStdout: true
+                    ).trim()
+                    
+                    echo "Backend ALB DNS: ${backendAlbDns}"
+                    
+                    sshagent(credentials: ['AWS_SSH_KEY']) {
+                        sh """
+                            set -e
+                            for ip in \$(echo '${env.WEB_IPS}' | jq -r '.[]'); do
+                                ssh -o StrictHostKeyChecking=no \
+                                    -o UserKnownHostsFile=/dev/null \
+                                    ec2-user@\$ip "
+                                    sudo sed -i 's|BACKEND_LB_DNS|${backendAlbDns}|g' /etc/nginx/conf.d/default.conf
+                                    sudo nginx -t
+                                "
+                                ssh -o StrictHostKeyChecking=no \
+                                    -o UserKnownHostsFile=/dev/null \
+                                    ec2-user@\$ip "
+                                    sudo systemctl restart nginx
+                                    sudo systemctl status nginx --no-pager -l
+                                "
+                            done
+                        """
+                    }
+                }
+            }
+        }
         
         stage('Terraform Destroy') {
             when {
