@@ -130,38 +130,29 @@ pipeline {
         }
         
         stage('Deploy Application Code') {
-            when {
-                expression { params.ACTION == 'apply' }
-            }
-            steps {
-                script {
-                    def dbCreds = sh(
-                        script: '''
-                            cd terraform
-                            DB_USER=$(grep db_username phil.tfvars | cut -d'"' -f2)
-                            DB_PASS=$(grep db_password phil.tfvars | cut -d'"' -f2)
-                            DB_NAME=$(grep db_name phil.tfvars | cut -d'"' -f2)
-                            echo "${DB_USER}:${DB_PASS}:${DB_NAME}"
-                        ''',
-                        returnStdout: true
-                    ).trim()
-                    
-                    def (dbUser, dbPass, dbName) = dbCreds.split(':')
-                    echo 'Deploying frontend to web servers...'
-                    sh """
-                        for ip in \$(echo '${env.WEB_IPS}' | jq -r '.[]'); do
-                            echo "Deploying to web server: \$ip"
-                            
-                            scp -o StrictHostKeyChecking=no -r application/frontend/* ec2-user@\$ip:/usr/share/nginx/html/
-                            
-                            ssh -o StrictHostKeyChecking=no ec2-user@\$ip 'sudo systemctl reload nginx'
-                            
-                            echo "Web server \$ip deployed successfully"
-                        done
-                    """
-                }
+    when {
+        expression { params.ACTION == 'apply' }
+    }
+    steps {
+        script {
+            echo 'Deploying frontend to web servers...'
+            
+            sshagent(credentials: ['AWS_SSH_KEY']) {
+                sh """
+                    set -e
+                    for ip in \$(echo '${env.WEB_IPS}' | jq -r '.[]'); do                       
+                        scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+                            -r application/frontend/* ec2-user@\$ip:/usr/share/nginx/html/
+                        
+                        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+                            ec2-user@\$ip 'sudo systemctl reload nginx'
+                    done
+                    echo "All web servers deployed successfully!"
+                """
             }
         }
+    }
+}
         
         stage('Terraform Destroy') {
             when {
