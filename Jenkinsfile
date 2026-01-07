@@ -151,7 +151,7 @@ pipeline {
                                     sudo chown -R nginx:nginx /usr/share/nginx/html/ && \
                                     sudo chmod -R 755 /usr/share/nginx/html/ && \
                                     rm -rf /tmp/frontend_deploy"
-
+                                ssh -o StrictHostKeyChecking=no ec2-user@\$ip "sudo nginx -t"
                                 ssh -o StrictHostKeyChecking=no ec2-user@\$ip \
                                     "sudo systemctl daemon-reload && (sudo systemctl restart nginx || sudo systemctl start nginx)"
                             done
