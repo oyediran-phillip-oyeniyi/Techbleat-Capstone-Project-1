@@ -137,68 +137,83 @@ pipeline {
         }
         
         stage('Deploy Application Code') {
-            when {
-                expression { params.ACTION == 'apply' }
+    when {
+        expression { params.ACTION == 'apply' }
+    }
+    steps {
+        script {
+            if (!env.BACKEND_LB_DNS || env.BACKEND_LB_DNS == 'null') {
+                error "BACKEND_LB_DNS is not set or is null. Cannot proceed with deployment."
             }
-            steps {
-                script {
-                    // Validate BACKEND_LB_DNS is set
-                    if (!env.BACKEND_LB_DNS || env.BACKEND_LB_DNS == 'null') {
-                        error "BACKEND_LB_DNS is not set or is null. Cannot proceed with deployment."
-                    }
+            
+            echo "Deploying with Backend LB DNS: ${env.BACKEND_LB_DNS}"
+            
+            sshagent(credentials: ['AWS_SSH_KEY']) {
+                sh """
+                    set -e
+
+                    for ip in \$(echo '${env.WEB_IPS}' | jq -r '.[]'); do
+                        echo "Deploying to \$ip..."
+                        
+                        ssh -o StrictHostKeyChecking=no ec2-user@\$ip "mkdir -p /tmp/frontend_deploy /tmp/nginx_deploy"
+                        
+                        # Copy frontend files
+                        scp -o StrictHostKeyChecking=no \
+                            -r application/frontend/* ec2-user@\$ip:/tmp/frontend_deploy/
+
+                        # Copy nginx configuration
+                        scp -o StrictHostKeyChecking=no \
+                            nginx/nginx.conf ec2-user@\$ip:/tmp/nginx_deploy/
+
+                        echo "Installing frontend files on \$ip..."
+                        ssh -o StrictHostKeyChecking=no ec2-user@\$ip "sudo rm -rf /usr/share/nginx/html/* && \
+                            sudo cp -r /tmp/frontend_deploy/* /usr/share/nginx/html/ && \
+                            sudo chown -R nginx:nginx /usr/share/nginx/html/ && \
+                            sudo chmod -R 755 /usr/share/nginx/html/"
+
+                        echo "Checking and fixing main nginx.conf on \$ip..."
+                        ssh -o StrictHostKeyChecking=no ec2-user@\$ip "\
+                            if sudo grep -q '^upstream' /etc/nginx/nginx.conf; then \
+                                echo 'WARNING: /etc/nginx/nginx.conf is corrupted. Restoring default...'; \
+                                sudo yum reinstall -y nginx || sudo amazon-linux-extras install nginx1 -y; \
+                            fi"
+
+                        echo "Deploying nginx configuration on \$ip..."
+                        ssh -o StrictHostKeyChecking=no ec2-user@\$ip "\
+                            sudo rm -f /etc/nginx/conf.d/default.conf && \
+                            sudo rm -f /etc/nginx/conf.d/*.conf && \
+                            sed 's/\\\${BACKEND_LB_DNS}/${env.BACKEND_LB_DNS}/g' /tmp/nginx_deploy/nginx.conf | \
+                            sudo tee /etc/nginx/conf.d/app.conf > /dev/null && \
+                            sudo chown root:root /etc/nginx/conf.d/app.conf && \
+                            sudo chmod 644 /etc/nginx/conf.d/app.conf && \
+                            rm -rf /tmp/frontend_deploy /tmp/nginx_deploy"
+
+                        echo "Verifying nginx configurations on \$ip..."
+                        ssh -o StrictHostKeyChecking=no ec2-user@\$ip "\
+                            echo '=== Main nginx.conf (first 30 lines) ===' && \
+                            sudo head -30 /etc/nginx/nginx.conf && \
+                            echo '' && \
+                            echo '=== App configuration ===' && \
+                            sudo cat /etc/nginx/conf.d/app.conf"
+
+                        echo "Testing nginx configuration on \$ip..."
+                        ssh -o StrictHostKeyChecking=no ec2-user@\$ip "sudo nginx -t"
+                        
+                        echo "Restarting nginx on \$ip..."
+                        ssh -o StrictHostKeyChecking=no ec2-user@\$ip \
+                            "sudo systemctl daemon-reload && sudo systemctl restart nginx"
+                        
+                        echo "Verifying nginx status on \$ip..."
+                        ssh -o StrictHostKeyChecking=no ec2-user@\$ip \
+                            "sudo systemctl status nginx --no-pager -l"
+                    done
                     
-                    echo "Deploying with Backend LB DNS: ${env.BACKEND_LB_DNS}"
-                    
-                    sshagent(credentials: ['AWS_SSH_KEY']) {
-                        sh """
-                            set -e
-
-                            for ip in \$(echo '${env.WEB_IPS}' | jq -r '.[]'); do
-                                echo "Deploying to \$ip..."
-                                
-                                ssh -o StrictHostKeyChecking=no ec2-user@\$ip "mkdir -p /tmp/frontend_deploy /tmp/nginx_deploy"
-                                
-                                # Copy frontend files
-                                scp -o StrictHostKeyChecking=no \
-                                    -r application/frontend/* ec2-user@\$ip:/tmp/frontend_deploy/
-
-                                # Copy nginx configuration
-                                scp -o StrictHostKeyChecking=no \
-                                    nginx/nginx.conf ec2-user@\$ip:/tmp/nginx_deploy/
-
-                                echo "Installing frontend files on \$ip..."
-                                ssh -o StrictHostKeyChecking=no ec2-user@\$ip "sudo rm -rf /usr/share/nginx/html/* && \
-                                    sudo cp -r /tmp/frontend_deploy/* /usr/share/nginx/html/ && \
-                                    sudo chown -R nginx:nginx /usr/share/nginx/html/ && \
-                                    sudo chmod -R 755 /usr/share/nginx/html/"
-
-                                echo "Deploying nginx configuration on \$ip..."
-                                ssh -o StrictHostKeyChecking=no ec2-user@\$ip "\
-                                    sudo rm -f /etc/nginx/conf.d/default.conf && \
-                                    sed 's/\\\${BACKEND_LB_DNS}/${env.BACKEND_LB_DNS}/g' /tmp/nginx_deploy/nginx.conf | \
-                                    sudo tee /etc/nginx/conf.d/app.conf > /dev/null && \
-                                    sudo chown root:root /etc/nginx/conf.d/app.conf && \
-                                    sudo chmod 644 /etc/nginx/conf.d/app.conf && \
-                                    rm -rf /tmp/frontend_deploy /tmp/nginx_deploy"
-
-                                echo "Testing nginx configuration on \$ip..."
-                                ssh -o StrictHostKeyChecking=no ec2-user@\$ip "sudo nginx -t"
-                                
-                                echo "Restarting nginx on \$ip..."
-                                ssh -o StrictHostKeyChecking=no ec2-user@\$ip \
-                                    "sudo systemctl daemon-reload && sudo systemctl restart nginx"
-                                
-                                echo "Verifying nginx status on \$ip..."
-                                ssh -o StrictHostKeyChecking=no ec2-user@\$ip \
-                                    "sudo systemctl status nginx --no-pager -l"
-                            done
-                            
-                            echo "Deployment completed successfully!"
-                        """
-                    }
-                }
+                    echo "Deployment completed successfully!"
+                """
             }
         }
+    }
+}
         
         stage('Terraform Destroy') {
             when {
