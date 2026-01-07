@@ -140,20 +140,29 @@ pipeline {
                             set -e
 
                             for ip in \$(echo '${env.WEB_IPS}' | jq -r '.[]'); do
-                                ssh -o StrictHostKeyChecking=no ec2-user@\$ip "mkdir -p /tmp/frontend_deploy"
-
+                                ssh -o StrictHostKeyChecking=no ec2-user@\$ip "mkdir -p /tmp/frontend_deploy /tmp/nginx_deploy"
                                 scp -o StrictHostKeyChecking=no \
                                     -r application/frontend/* ec2-user@\$ip:/tmp/frontend_deploy/
 
-                                echo "Installing files and setting permissions..."
+                                scp -o StrictHostKeyChecking=no \
+                                    application/nginx/nginx.conf ec2-user@\$ip:/tmp/nginx_deploy/
+
                                 ssh -o StrictHostKeyChecking=no ec2-user@\$ip "sudo rm -rf /usr/share/nginx/html/* && \
                                     sudo cp -r /tmp/frontend_deploy/* /usr/share/nginx/html/ && \
                                     sudo chown -R nginx:nginx /usr/share/nginx/html/ && \
-                                    sudo chmod -R 755 /usr/share/nginx/html/ && \
-                                    rm -rf /tmp/frontend_deploy"
+                                    sudo chmod -R 755 /usr/share/nginx/html/"
+
+                                ssh -o StrictHostKeyChecking=no ec2-user@\$ip "\
+                                    sed 's/\\\${BACKEND_LB_DNS}/${env.BACKEND_LB_DNS}/g' /tmp/nginx_deploy/nginx.conf | \
+                                    sudo tee /etc/nginx/conf.d/app.conf > /dev/null && \
+                                    sudo chown root:root /etc/nginx/conf.d/app.conf && \
+                                    sudo chmod 644 /etc/nginx/conf.d/app.conf && \
+                                    rm -rf /tmp/frontend_deploy /tmp/nginx_deploy"
+
                                 ssh -o StrictHostKeyChecking=no ec2-user@\$ip "sudo nginx -t"
+                                
                                 ssh -o StrictHostKeyChecking=no ec2-user@\$ip \
-                                    "sudo systemctl daemon-reload && (sudo systemctl restart nginx || sudo systemctl start nginx)"
+                                    "sudo systemctl daemon-reload && sudo systemctl restart nginx || sudo systemctl start nginx"
                             done
                         """
                     }
