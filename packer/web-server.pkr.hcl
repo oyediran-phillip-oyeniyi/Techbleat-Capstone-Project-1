@@ -55,8 +55,8 @@ build {
   }
   
   provisioner "file" {
-    source      = "../nginx/default.conf"
-    destination = "/tmp/default.conf"
+    source      = "../nginx/nginx.conf"
+    destination = "/tmp/nginx.conf"
   }
   
   provisioner "shell" {
@@ -64,9 +64,8 @@ build {
       "set -e",
       "sudo cp -r /tmp/frontend/. /usr/share/nginx/html/",
       "sudo chown -R nginx:nginx /usr/share/nginx/html/",
-      "sudo cp /tmp/default.conf /etc/nginx/conf.d/default.conf",
-      "sudo chown root:root /etc/nginx/conf.d/default.conf",
-      "sudo cp /tmp/default.conf /etc/nginx/conf.d/default.conf",
+      "sudo cp /tmp/nginx.conf /etc/nginx/nginx.conf",
+      "sudo chown root:root /etc/nginx/nginx.conf",
       "sudo systemctl enable nginx",
       "echo 'Web server setup completed'"
     ]
