@@ -119,11 +119,18 @@ pipeline {
                             returnStdout: true
                         ).trim()
                         
+                        def backendAlbDns = sh(
+                            script: 'terraform output -raw backend_alb_dns',
+                            returnStdout: true
+                        ).trim()
+                        
                         env.DB_ENDPOINT = dbEndpoint
                         env.WEB_IPS = webIps
+                        env.BACKEND_LB_DNS = backendAlbDns
                         
                         echo "Database Endpoint: ${dbEndpoint}"
                         echo "Web Server IPs: ${webIps}"
+                        echo "Backend ALB DNS: ${backendAlbDns}"
                     }
                 }
             }
@@ -135,71 +142,58 @@ pipeline {
             }
             steps {
                 script {
+                    // Validate BACKEND_LB_DNS is set
+                    if (!env.BACKEND_LB_DNS || env.BACKEND_LB_DNS == 'null') {
+                        error "BACKEND_LB_DNS is not set or is null. Cannot proceed with deployment."
+                    }
+                    
+                    echo "Deploying with Backend LB DNS: ${env.BACKEND_LB_DNS}"
+                    
                     sshagent(credentials: ['AWS_SSH_KEY']) {
                         sh """
                             set -e
 
                             for ip in \$(echo '${env.WEB_IPS}' | jq -r '.[]'); do
+                                echo "Deploying to \$ip..."
+                                
                                 ssh -o StrictHostKeyChecking=no ec2-user@\$ip "mkdir -p /tmp/frontend_deploy /tmp/nginx_deploy"
+                                
+                                # Copy frontend files
                                 scp -o StrictHostKeyChecking=no \
                                     -r application/frontend/* ec2-user@\$ip:/tmp/frontend_deploy/
 
+                                # Copy nginx configuration
                                 scp -o StrictHostKeyChecking=no \
                                     nginx/nginx.conf ec2-user@\$ip:/tmp/nginx_deploy/
 
+                                echo "Installing frontend files on \$ip..."
                                 ssh -o StrictHostKeyChecking=no ec2-user@\$ip "sudo rm -rf /usr/share/nginx/html/* && \
                                     sudo cp -r /tmp/frontend_deploy/* /usr/share/nginx/html/ && \
                                     sudo chown -R nginx:nginx /usr/share/nginx/html/ && \
                                     sudo chmod -R 755 /usr/share/nginx/html/"
 
+                                echo "Deploying nginx configuration on \$ip..."
                                 ssh -o StrictHostKeyChecking=no ec2-user@\$ip "\
+                                    sudo rm -f /etc/nginx/conf.d/default.conf && \
                                     sed 's/\\\${BACKEND_LB_DNS}/${env.BACKEND_LB_DNS}/g' /tmp/nginx_deploy/nginx.conf | \
                                     sudo tee /etc/nginx/conf.d/app.conf > /dev/null && \
                                     sudo chown root:root /etc/nginx/conf.d/app.conf && \
                                     sudo chmod 644 /etc/nginx/conf.d/app.conf && \
                                     rm -rf /tmp/frontend_deploy /tmp/nginx_deploy"
 
+                                echo "Testing nginx configuration on \$ip..."
                                 ssh -o StrictHostKeyChecking=no ec2-user@\$ip "sudo nginx -t"
                                 
+                                echo "Restarting nginx on \$ip..."
                                 ssh -o StrictHostKeyChecking=no ec2-user@\$ip \
-                                    "sudo systemctl daemon-reload && sudo systemctl restart nginx || sudo systemctl start nginx"
+                                    "sudo systemctl daemon-reload && sudo systemctl restart nginx"
+                                
+                                echo "Verifying nginx status on \$ip..."
+                                ssh -o StrictHostKeyChecking=no ec2-user@\$ip \
+                                    "sudo systemctl status nginx --no-pager -l"
                             done
-                        """
-                    }
-                }
-            }
-        }
-
-        stage('Configure Nginx') {
-            when {
-                expression { params.ACTION == 'apply' }
-            }
-            steps {
-                script {                   
-                    def backendAlbDns = sh(
-                        script: 'cd terraform && terraform output -raw backend_alb_dns',
-                        returnStdout: true
-                    ).trim()
-                    
-                    echo "Backend ALB DNS: ${backendAlbDns}"
-                    
-                    sshagent(credentials: ['AWS_SSH_KEY']) {
-                        sh """
-                            set -e
-                            for ip in \$(echo '${env.WEB_IPS}' | jq -r '.[]'); do
-                                ssh -o StrictHostKeyChecking=no \
-                                    # -o UserKnownHostsFile=/dev/null \
-                                    ec2-user@\$ip "
-                                    sudo sed -i 's|BACKEND_LB_DNS|${backendAlbDns}|g' /etc/nginx/nginx.conf
-                                    sudo nginx -t
-                                "
-                                ssh -o StrictHostKeyChecking=no \
-                                    # -o UserKnownHostsFile=/dev/null \
-                                    ec2-user@\$ip "
-                                    sudo systemctl restart nginx
-                                    sudo systemctl status nginx --no-pager -l
-                                "
-                            done
+                            
+                            echo "Deployment completed successfully!"
                         """
                     }
                 }
