@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-cat > /home/ec2-user/app/.env << EOF
+cat > /home/ec2-user/app/.env << 'EOF'
 DB_HOST=${db_host}
 DB_NAME=${db_name}
 DB_USER=${db_user}
