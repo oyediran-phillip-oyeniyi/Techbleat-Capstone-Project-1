@@ -145,7 +145,7 @@ pipeline {
                                     -r application/frontend/* ec2-user@\$ip:/tmp/frontend_deploy/
 
                                 scp -o StrictHostKeyChecking=no \
-                                    application/nginx/nginx.conf ec2-user@\$ip:/tmp/nginx_deploy/
+                                    nginx/nginx.conf ec2-user@\$ip:/tmp/nginx_deploy/
 
                                 ssh -o StrictHostKeyChecking=no ec2-user@\$ip "sudo rm -rf /usr/share/nginx/html/* && \
                                     sudo cp -r /tmp/frontend_deploy/* /usr/share/nginx/html/ && \
