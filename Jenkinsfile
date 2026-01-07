@@ -134,36 +134,33 @@ pipeline {
                 expression { params.ACTION == 'apply' }
             }
             steps {
-                script {                   
+                script {
                     sshagent(credentials: ['AWS_SSH_KEY']) {
                         sh """
                             set -e
+
                             for ip in \$(echo '${env.WEB_IPS}' | jq -r '.[]'); do
-                                ssh -o StrictHostKeyChecking=no \
-                                    # -o UserKnownHostsFile=/dev/null \
-                                    ec2-user@\$ip 'mkdir -p /tmp/frontend_deploy'
-                                
+                                ssh -o StrictHostKeyChecking=no ec2-user@\$ip "mkdir -p /tmp/frontend_deploy"
+
                                 scp -o StrictHostKeyChecking=no \
-                                    # -o UserKnownHostsFile=/dev/null \
                                     -r application/frontend/* ec2-user@\$ip:/tmp/frontend_deploy/
-                                
+
                                 echo "Installing files and setting permissions..."
-                                ssh -o StrictHostKeyChecking=no \
-                                    # -o UserKnownHostsFile=/dev/null \
-                                    ec2-user@\$ip '
-                                    sudo rm -rf /usr/share/nginx/html/*
-                                    sudo cp -r /tmp/frontend_deploy/* /usr/share/nginx/html/
-                                    sudo chown -R nginx:nginx /usr/share/nginx/html/
-                                    sudo chmod -R 755 /usr/share/nginx/html/
-                                    rm -rf /tmp/frontend_deploy
-                                '
-                                ssh -o StrictHostKeyChecking=no \
-                                    # -o UserKnownHostsFile=/dev/null \
-                                    ec2-user@\$ip 'sudo systemctl reload nginx'
+
+                                ssh -o StrictHostKeyChecking=no ec2-user@\$ip << 'EOF'
+                                sudo rm -rf /usr/share/nginx/html/*
+                                sudo cp -r /tmp/frontend_deploy/* /usr/share/nginx/html/
+                                sudo chown -R nginx:nginx /usr/share/nginx/html/
+                                sudo chmod -R 755 /usr/share/nginx/html/
+                                rm -rf /tmp/frontend_deploy
+EOF
+
+                                ssh -o StrictHostKeyChecking=no ec2-user@\$ip "sudo systemctl reload nginx"
                             done
                         """
                     }
                 }
+
             }
         }
 
