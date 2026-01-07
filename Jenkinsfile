@@ -146,13 +146,11 @@ pipeline {
                                     -r application/frontend/* ec2-user@\$ip:/tmp/frontend_deploy/
 
                                 echo "Installing files and setting permissions..."
-                                ssh -o StrictHostKeyChecking=no ec2-user@\$ip << 'EOF'
-sudo rm -rf /usr/share/nginx/html/*
-sudo cp -r /tmp/frontend_deploy/* /usr/share/nginx/html/
-sudo chown -R nginx:nginx /usr/share/nginx/html/
-sudo chmod -R 755 /usr/share/nginx/html/
-rm -rf /tmp/frontend_deploy
-EOF
+                                ssh -o StrictHostKeyChecking=no ec2-user@\$ip "sudo rm -rf /usr/share/nginx/html/* && \
+                                    sudo cp -r /tmp/frontend_deploy/* /usr/share/nginx/html/ && \
+                                    sudo chown -R nginx:nginx /usr/share/nginx/html/ && \
+                                    sudo chmod -R 755 /usr/share/nginx/html/ && \
+                                    rm -rf /tmp/frontend_deploy"
 
                                 ssh -o StrictHostKeyChecking=no ec2-user@\$ip \
                                     "sudo systemctl daemon-reload && (sudo systemctl restart nginx || sudo systemctl start nginx)"
@@ -160,7 +158,6 @@ EOF
                         """
                     }
                 }
-
             }
         }
 
