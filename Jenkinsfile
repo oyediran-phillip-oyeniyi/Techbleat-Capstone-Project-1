@@ -155,7 +155,10 @@ pipeline {
                                 rm -rf /tmp/frontend_deploy
 EOF
 
-                                ssh -o StrictHostKeyChecking=no ec2-user@\$ip "sudo systemctl reload nginx"
+                                ssh -o StrictHostKeyChecking=no ec2-user@\$ip """
+                                sudo systemctl daemon-reload
+                                sudo systemctl restart nginx || sudo systemctl start nginx
+                                """
                             done
                         """
                     }
