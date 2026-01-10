@@ -143,13 +143,6 @@ pipeline {
 
             steps {
             script {
-
-                if (!env.BACKEND_LB_DNS || env.BACKEND_LB_DNS == 'null') {
-                    error "BACKEND_LB_DNS is not set or is null. Cannot proceed with deployment."
-                }
-
-                echo "Deploying with Backend LB DNS: ${env.BACKEND_LB_DNS}"
-
                 sshagent(credentials: ['AWS_SSH_KEY']) {
                     sh """
                         set -e
@@ -173,7 +166,6 @@ pipeline {
                             # Validate and reload nginx
                             ssh -o StrictHostKeyChecking=no ec2-user@\$ip \\
                                 "sudo nginx -t && sudo systemctl reload nginx"
-                        done
                     """
                 }
             }
