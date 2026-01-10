@@ -171,8 +171,6 @@ pipeline {
             }
         }
 
-        }
-
         
         stage('Terraform Destroy') {
             when {
