@@ -166,7 +166,7 @@ pipeline {
 
                                 # Validate and reload nginx
                                 ssh -o StrictHostKeyChecking=no ec2-user@\$ip \\
-                                    "sudo nginx -t && sudo systemctl reload nginx"
+                                    "sudo nginx -t && sudo nginx -s reload"
                             done
                         """
                     }
