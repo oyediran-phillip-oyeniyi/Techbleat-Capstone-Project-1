@@ -109,28 +109,28 @@ pipeline {
             steps {
                 script {
                     dir('terraform') {
-                        def dbEndpoint = sh(
-                            script: 'terraform output -raw rds_endpoint',
-                            returnStdout: true
-                        ).trim()
-                        
                         def webIps = sh(
                             script: 'terraform output -json web_server_ips',
                             returnStdout: true
                         ).trim()
                         
-                        def backendAlbDns = sh(
-                            script: 'terraform output -raw backend_alb_dns',
+                        def backendIp1 = sh(
+                            script: 'terraform output -raw backend_server_1_ip',
                             returnStdout: true
                         ).trim()
                         
-                        env.DB_ENDPOINT = dbEndpoint
-                        env.WEB_IPS = webIps
-                        env.BACKEND_LB_DNS = backendAlbDns
+                        def backendIp2 = sh(
+                            script: 'terraform output -raw backend_server_2_ip',
+                            returnStdout: true
+                        ).trim()
                         
-                        echo "Database Endpoint: ${dbEndpoint}"
+                        env.WEB_IPS = webIps
+                        env.BACKEND_IP1 = backendIp1
+                        env.BACKEND_IP2 = backendIp2
+                        
                         echo "Web Server IPs: ${webIps}"
-                        echo "Backend ALB DNS: ${backendAlbDns}"
+                        echo "Backend IP1: ${backendIp1}"
+                        echo "Backend IP2: ${backendIp2}"
                     }
                 }
             }
@@ -161,7 +161,7 @@ pipeline {
                                 ssh -o StrictHostKeyChecking=no ec2-user@\$ip \\
                                     "sudo mv /tmp/nginx.conf /etc/nginx/nginx.conf && \
                                     sudo mv /tmp/index.html /usr/share/nginx/html/index.html && \
-                                    sudo sed -i "s/BACKEND_LB_DNS/${BACKEND_LB_DNS}/g" /etc/nginx/nginx.conf"
+                                    sudo sed -i \"s|#BACKEND_SERVERS#|server ${BACKEND_IP1}:8000; server ${BACKEND_IP2}:8000;|g\" /etc/nginx/nginx.conf"
 
 
                                 # Validate and reload nginx
@@ -195,15 +195,10 @@ pipeline {
             }
             steps {
                 script {
-                    def albDns = sh(
-                        script: 'cd terraform && terraform output -raw web_alb_dns',
-                        returnStdout: true
-                    ).trim()
-                    
                     echo "Application deployed successfully!"
-                    echo "Access your application at: http://${albDns}"
+                    echo "Access your application at: http://${env.DB_ENDPOINT}"
                     echo ""
-                    echo "Test the backend API at: http://${albDns}/api/products"
+                    echo "Test the backend API at: http://${env.DB_ENDPOINT}/api/products"
                 }
             }
         }

@@ -1,11 +1,11 @@
-output "web_alb_dns" {
-  description = "DNS name of the web application load balancer"
-  value       = aws_lb.web.dns_name
+output "backend_server_1_ip" {
+  description = "Private IP of backend server 1"
+  value       = aws_instance.backend_server_1.private_ip
 }
 
-output "backend_alb_dns" {
-  description = "DNS name of the backend load balancer"
-  value       = aws_lb.backend.dns_name
+output "backend_server_2_ip" {
+  description = "Private IP of backend server 2"
+  value       = aws_instance.backend_server_2.private_ip
 }
 
 output "web_server_ips" {

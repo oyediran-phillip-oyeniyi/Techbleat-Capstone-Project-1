@@ -1,6 +1,6 @@
-resource "aws_security_group" "alb" {
-  name        = "alb-sg"
-  description = "Security group for Application Load Balancer"
+resource "aws_security_group" "web_server" {
+  name        = "web-server-sg"
+  description = "Security group for web servers"
   vpc_id      = aws_vpc.main.id
 
   ingress {
@@ -17,40 +17,6 @@ resource "aws_security_group" "alb" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
     description = "HTTPS from internet"
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow all outbound"
-  }
-
-  tags = {
-    Name = "alb-security-group"
-  }
-}
-
-resource "aws_security_group" "web_server" {
-  name        = "web-server-sg"
-  description = "Security group for web servers"
-  vpc_id      = aws_vpc.main.id
-
-  ingress {
-    from_port       = 80
-    to_port         = 80
-    protocol        = "tcp"
-    security_groups = [aws_security_group.alb.id]
-    description     = "HTTP from ALB"
-  }
-
-  ingress {
-    from_port       = 443
-    to_port         = 443
-    protocol        = "tcp"
-    security_groups = [aws_security_group.alb.id]
-    description     = "HTTPS from ALB"
   }
 
   ingress {
@@ -74,32 +40,6 @@ resource "aws_security_group" "web_server" {
   }
 }
 
-resource "aws_security_group" "backend_alb" {
-  name        = "backend-alb-sg"
-  description = "Security group for backend internal ALB"
-  vpc_id      = aws_vpc.main.id
-
-  ingress {
-    from_port       = 8000
-    to_port         = 8000
-    protocol        = "tcp"
-    security_groups = [aws_security_group.web_server.id]
-    description     = "Port 8000 from web servers"
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow all outbound"
-  }
-
-  tags = {
-    Name = "backend-alb-sg"
-  }
-}
-
 resource "aws_security_group" "backend_server" {
   name        = "backend-server-sg"
   description = "Security group for backend servers"
@@ -109,8 +49,8 @@ resource "aws_security_group" "backend_server" {
     from_port       = 8000
     to_port         = 8000
     protocol        = "tcp"
-    security_groups = [aws_security_group.backend_alb.id]
-    description     = "FastAPI from backend ALB"
+    security_groups = [aws_security_group.web_server.id]
+    description     = "FastAPI from web servers"
   }
 
   ingress {

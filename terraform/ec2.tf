@@ -47,16 +47,12 @@ resource "aws_instance" "web_server_1" {
   vpc_security_group_ids = [aws_security_group.web_server.id]
   key_name              = var.key_name
   
-  user_data = templatefile("${path.module}/user-data/web-server.sh", {
-    backend_lb_dns = aws_lb.backend.dns_name
-  })
+  user_data = file("${path.module}/user-data/web-server.sh")
 
   tags = {
     Name = "web-server-az1"
     Tier = "Web"
   }
-  
-  depends_on = [aws_lb.backend]
 }
 
 resource "aws_instance" "web_server_2" {
@@ -67,16 +63,12 @@ resource "aws_instance" "web_server_2" {
   vpc_security_group_ids = [aws_security_group.web_server.id]
   key_name              = var.key_name
   
-  user_data = templatefile("${path.module}/user-data/web-server.sh", {
-    backend_lb_dns = aws_lb.backend.dns_name
-  })
+  user_data = file("${path.module}/user-data/web-server.sh")
 
   tags = {
     Name = "web-server-az2"
     Tier = "Web"
   }
-  
-  depends_on = [aws_lb.backend]
 }
 
 # Backend Server Instances
