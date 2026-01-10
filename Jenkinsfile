@@ -142,34 +142,37 @@ pipeline {
             }
 
             steps {
-            script {
-                sshagent(credentials: ['AWS_SSH_KEY']) {
-                    sh """
-                        set -e
+                script {
+                    sshagent(credentials: ['AWS_SSH_KEY']) {
+                        sh """
+                            set -e
 
-                        for ip in \$(echo '${env.WEB_IPS}' | jq -r '.[]'); do
-                            echo "Deploying to \$ip..."
+                            for ip in \$(echo '${env.WEB_IPS}' | jq -r '.[]'); do
+                                echo "Deploying to \$ip..."
 
-                            # Copy files to temporary writable location
-                            scp -o StrictHostKeyChecking=no \
-                                nginx/nginx.conf ec2-user@\$ip:/tmp/nginx.conf
+                                # Copy files to temporary writable location
+                                scp -o StrictHostKeyChecking=no \
+                                    nginx/nginx.conf ec2-user@\$ip:/tmp/nginx.conf
 
-                            scp -o StrictHostKeyChecking=no \
-                                application/frontend/index.html ec2-user@\$ip:/tmp/index.html
+                                scp -o StrictHostKeyChecking=no \
+                                    application/frontend/index.html ec2-user@\$ip:/tmp/index.html
 
-                            # Move files to nginx directories and update values
-                            ssh -o StrictHostKeyChecking=no ec2-user@\$ip \\
-                                "sudo mv /tmp/nginx.conf /etc/nginx/nginx.conf && \
-                                sudo mv /tmp/index.html /usr/share/nginx/html/index.html && \
-                                sudo sed -i 's/localhost/phil-fruit-veg/g' /usr/share/nginx/html/index.html"
+                                # Move files to nginx directories and update values
+                                ssh -o StrictHostKeyChecking=no ec2-user@\$ip \\
+                                    "sudo mv /tmp/nginx.conf /etc/nginx/nginx.conf && \
+                                    sudo mv /tmp/index.html /usr/share/nginx/html/index.html && \
+                                    sudo sed -i 's/localhost/phil-fruit-veg/g' /usr/share/nginx/html/index.html"
 
-                            # Validate and reload nginx
-                            ssh -o StrictHostKeyChecking=no ec2-user@\$ip \\
-                                "sudo nginx -t && sudo systemctl reload nginx"
-                    """
+                                # Validate and reload nginx
+                                ssh -o StrictHostKeyChecking=no ec2-user@\$ip \\
+                                    "sudo nginx -t && sudo systemctl reload nginx"
+                            done
+                        """
+                    }
                 }
             }
         }
+
 
         
         stage('Terraform Destroy') {
