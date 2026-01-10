@@ -142,39 +142,43 @@ pipeline {
             }
 
             steps {
-                script {
+            script {
 
-                    if (!env.BACKEND_LB_DNS || env.BACKEND_LB_DNS == 'null') {
-                        error "BACKEND_LB_DNS is not set or is null. Cannot proceed with deployment."
-                    }
+                if (!env.BACKEND_LB_DNS || env.BACKEND_LB_DNS == 'null') {
+                    error "BACKEND_LB_DNS is not set or is null. Cannot proceed with deployment."
+                }
 
-                    echo "Deploying with Backend LB DNS: ${env.BACKEND_LB_DNS}"
+                echo "Deploying with Backend LB DNS: ${env.BACKEND_LB_DNS}"
 
-                    sshagent(credentials: ['AWS_SSH_KEY']) {
+                sshagent(credentials: ['AWS_SSH_KEY']) {
                     sh """
                         set -e
 
                         for ip in \$(echo '${env.WEB_IPS}' | jq -r '.[]'); do
                             echo "Deploying to \$ip..."
 
-                            # Copy nginx configuration to a writable location
+                            # Copy files to temporary writable location
                             scp -o StrictHostKeyChecking=no \
                                 nginx/nginx.conf ec2-user@\$ip:/tmp/nginx.conf
 
-                            # Move config to /etc/nginx with sudo and replace backend DNS
+                            scp -o StrictHostKeyChecking=no \
+                                application/frontend/index.html ec2-user@\$ip:/tmp/index.html
+
+                            # Move files to nginx directories and update values
                             ssh -o StrictHostKeyChecking=no ec2-user@\$ip \\
                                 "sudo mv /tmp/nginx.conf /etc/nginx/nginx.conf && \
-                                sudo sed -i 's/\\\\\\${BACKEND_LB_DNS}/${env.BACKEND_LB_DNS}/g' /etc/nginx/nginx.conf"
+                                sudo mv /tmp/index.html /usr/share/nginx/html/index.html && \
+                                sudo sed -i 's/localhost/phil-fruit-veg/g' /usr/share/nginx/html/index.html"
 
                             # Validate and reload nginx
-                            ssh -o StrictHostKeyChecking=no ec2-user@\$ip \
+                            ssh -o StrictHostKeyChecking=no ec2-user@\$ip \\
                                 "sudo nginx -t && sudo systemctl reload nginx"
                         done
                     """
                 }
-
-                }
             }
+        }
+
         }
 
         
