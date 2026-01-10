@@ -137,36 +137,43 @@ pipeline {
         }
         
         stage('Deploy Application Code') {
-    when {
-        expression { params.ACTION == 'apply' }
-    }
-    steps {
-        script {
-            if (!env.BACKEND_LB_DNS || env.BACKEND_LB_DNS == 'null') {
-                error "BACKEND_LB_DNS is not set or is null. Cannot proceed with deployment."
+            when {
+                expression { params.ACTION == 'apply' }
             }
-            
-            echo "Deploying with Backend LB DNS: ${env.BACKEND_LB_DNS}"
-            
-            sshagent(credentials: ['AWS_SSH_KEY']) {
-                sh """
-                    set -e
 
-                    for ip in \$(echo '${env.WEB_IPS}' | jq -r '.[]'); do
-                        echo "Deploying to \$ip..."
-                        
-                        # Copy nginx configuration
+            steps {
+                script {
+
+                    if (!env.BACKEND_LB_DNS || env.BACKEND_LB_DNS == 'null') {
+                        error "BACKEND_LB_DNS is not set or is null. Cannot proceed with deployment."
+                    }
+
+                    echo "Deploying with Backend LB DNS: ${env.BACKEND_LB_DNS}"
+
+                    sshagent(credentials: ['AWS_SSH_KEY']) {
                         sh """
-                        scp -o StrictHostKeyChecking=no \
-                            nginx/nginx.conf ec2-user@${ip}:/etc/nginx/
+                            set -e
 
-                        sed -i 's/\\\${BACKEND_LB_DNS}/${env.BACKEND_LB_DNS}/g' /etc/nginx/nginx.conf
+                            for ip in \$(echo '${env.WEB_IPS}' | jq -r '.[]'); do
+                                echo "Deploying to \$ip..."
+
+                                # Copy nginx configuration
+                                scp -o StrictHostKeyChecking=no \
+                                    nginx/nginx.conf ec2-user@\$ip:/etc/nginx/
+
+                                # Replace backend DNS
+                                ssh -o StrictHostKeyChecking=no ec2-user@\$ip \\
+                                    "sed -i 's/\\\\\\${BACKEND_LB_DNS}/${env.BACKEND_LB_DNS}/g' /etc/nginx/nginx.conf"
+
+                                # Reload nginx
+                                ssh -o StrictHostKeyChecking=no ec2-user@\$ip "sudo nginx -t && sudo systemctl reload nginx"
+                            done
                         """
-                """
+                    }
+                }
             }
         }
-    }
-}
+
         
         stage('Terraform Destroy') {
             when {
