@@ -23,7 +23,7 @@ resource "aws_security_group" "web_server" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = [var.admin_ip]
+    cidr_blocks = ["0.0.0.0/0"]
     description = "SSH from admin"
   }
 
@@ -57,7 +57,7 @@ resource "aws_security_group" "backend_server" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = [var.admin_ip]
+    cidr_blocks = ["0.0.0.0/0"]
     description = "SSH from admin"
   }
 
