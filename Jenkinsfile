@@ -161,7 +161,7 @@ pipeline {
                                 ssh -o StrictHostKeyChecking=no ec2-user@\$ip \\
                                     "sudo mv /tmp/nginx.conf /etc/nginx/nginx.conf && \
                                     sudo mv /tmp/index.html /usr/share/nginx/html/index.html && \
-                                    sudo sed -i 's/localhost/phil-fruit-veg/g' /usr/share/nginx/html/index.html"
+                                    sudo sed -i 's/BACKEND_LB_DNS/${BACKEND_LB_DNS}/g' /usr/share/nginx/html/index.html"
 
                                 # Validate and reload nginx
                                 ssh -o StrictHostKeyChecking=no ec2-user@\$ip \\
