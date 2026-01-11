@@ -49,6 +49,15 @@ build {
     script = "scripts/install-nginx.sh"
   }
   
+  provisioner "shell" {
+    inline = [
+      "set -e",
+      "sudo amazon-linux-extras install epel -y",
+      "sudo yum install certbot python3-certbot-nginx -y",
+      "echo 'Certbot installed'"
+    ]
+  }
+  
   provisioner "file" {
     source      = "../application/frontend"
     destination = "/tmp/frontend"

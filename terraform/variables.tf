@@ -39,3 +39,8 @@ variable "domain_name" {
     type = string
     default = ""
 }
+
+variable "email" {
+  description = "Email for Let's Encrypt certificates"
+  type        = string
+}

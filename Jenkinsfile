@@ -163,11 +163,27 @@ pipeline {
                         env.BACKEND_IP1 = backendIp1
                         env.BACKEND_IP2 = backendIp2
                         env.NLB_DNS = nlbDns
+                        env.DOMAIN = "${domain_name}"
+                        env.EMAIL = "${email}"
                         
                         echo "Web Server IPs: ${webIps}"
                         echo "Backend IP1: ${backendIp1}"
                         echo "Backend IP2: ${backendIp2}"
+                        echo "ALB DNS: ${nlbDns}"
                     }
+                }
+            }
+        }
+
+        stage('Setup HTTPS') {
+            when {
+                expression { params.ACTION == 'apply' }
+            }
+            steps {
+                script {
+                    echo "Ensure your domain ${env.DOMAIN} is pointing to the NLB DNS: ${env.NLB_DNS}"
+                    echo "In ice.boi, set your desired name and provide ${env.NLB_DNS} as the load balancer URL."
+                    input message: 'Have you updated the DNS in ice.boi to point to the NLB DNS?', ok: 'Yes, proceed'
                 }
             }
         }
@@ -198,7 +214,8 @@ pipeline {
                                     "sudo mv /tmp/nginx.conf /etc/nginx/nginx.conf && \
                                     sudo mv /tmp/index.html /usr/share/nginx/html/index.html && \
                                     sudo sed -i 's|#BACKEND_SERVERS#|server '${BACKEND_IP1}':8000; server '${BACKEND_IP2}':8000;|g' /etc/nginx/nginx.conf && \
-                                    sudo sed -i 's|http://localhost:8000/api/|/api/|g' /usr/share/nginx/html/index.html"
+                                    sudo sed -i 's|http://localhost:8000/api/|/api/|g' /usr/share/nginx/html/index.html && \
+                                    sudo certbot --nginx -d ${env.DOMAIN} --email ${env.EMAIL} --non-interactive --agree-tos"
 
 
                                 # Validate and reload nginx
@@ -233,9 +250,9 @@ pipeline {
             steps {
                 script {
                     echo "Application deployed successfully!"
-                    echo "Access your application at: http://${env.NLB_DNS}"
+                    echo "Access your application at: https://${env.DOMAIN}"
                     echo ""
-                    echo "Test the backend API at: http://${env.NLB_DNS}/api/products"
+                    echo "Test the backend API at: https://${env.DOMAIN}/api/products"
                 }
             }
         }
