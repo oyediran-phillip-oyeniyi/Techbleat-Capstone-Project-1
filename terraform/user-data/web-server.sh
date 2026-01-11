@@ -3,11 +3,10 @@ set -e
 exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
 # Configure backend servers in nginx.conf
-backend_config=""
 for ip in ${backend_ips}; do
-  backend_config="${backend_config}server ${ip}:8000;\n"
+  sed -i "/#BACKEND_SERVERS#/a server $ip:8000;" /etc/nginx/nginx.conf
 done
-sed -i 's|#BACKEND_SERVERS#|'"$backend_config"'|' /etc/nginx/nginx.conf
+sed -i "/#BACKEND_SERVERS#/d" /etc/nginx/nginx.conf
 
 echo "Setting permissions for deployment..."
 chown -R ec2-user:nginx /usr/share/nginx/html/
