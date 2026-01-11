@@ -53,7 +53,7 @@ build {
     inline = [
       "set -e",
       "sudo amazon-linux-extras install epel -y",
-      "sudo yum install certbot python3-certbot-nginx -y",
+      "sudo yum install certbot certbot-nginx -y",
       "echo 'Certbot installed'"
     ]
   }
