@@ -7,7 +7,7 @@ backend_servers=""
 for ip in ${backend_ips}; do
   backend_servers="${backend_servers}server ${ip}:8000;\n"
 done
-sed -i "s|#BACKEND_SERVERS#|${backend_servers}|" /etc/nginx/nginx.conf
+sed -i 's|#BACKEND_SERVERS#|'"$backend_servers"'|' /etc/nginx/nginx.conf
 
 echo "Setting permissions for deployment..."
 chown -R ec2-user:nginx /usr/share/nginx/html/
