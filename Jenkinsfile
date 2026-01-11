@@ -197,7 +197,8 @@ pipeline {
                                 ssh -o StrictHostKeyChecking=no ec2-user@\$ip \\
                                     "sudo mv /tmp/nginx.conf /etc/nginx/nginx.conf && \
                                     sudo mv /tmp/index.html /usr/share/nginx/html/index.html && \
-                                    sudo sed -i 's|#BACKEND_SERVERS#|server '${BACKEND_IP1}':8000; server '${BACKEND_IP2}':8000;|g' /etc/nginx/nginx.conf"
+                                    sudo sed -i 's|#BACKEND_SERVERS#|server '${BACKEND_IP1}':8000; server '${BACKEND_IP2}':8000;|g' /etc/nginx/nginx.conf && \
+                                    sudo sed -i 's|http://localhost:8000/api/|/api/|g' /usr/share/nginx/html/index.html"
 
 
                                 # Validate and reload nginx
