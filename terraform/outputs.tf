@@ -34,6 +34,16 @@ output "rds_endpoint" {
   sensitive   = true
 }
 
+output "domain_name" {
+  description = "The domain name"
+  value       = var.domain_name
+}
+
+output "email" {
+  description = "The email for Let's Encrypt"
+  value       = var.email
+}
+
 output "nlb_dns_name" {
   description = "DNS name of the Network Load Balancer"
   value       = aws_lb.web_nlb.dns_name

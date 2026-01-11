@@ -159,12 +159,22 @@ pipeline {
                             returnStdout: true
                         ).trim()
                         
+                        def domain = sh(
+                            script: 'terraform output -raw domain_name',
+                            returnStdout: true
+                        ).trim()
+                        
+                        def email = sh(
+                            script: 'terraform output -raw email',
+                            returnStdout: true
+                        ).trim()
+                        
                         env.WEB_IPS = webIps
                         env.BACKEND_IP1 = backendIp1
                         env.BACKEND_IP2 = backendIp2
                         env.NLB_DNS = nlbDns
-                        env.DOMAIN = "${domain_name}"
-                        env.EMAIL = "${email}"
+                        env.DOMAIN = domain
+                        env.EMAIL = email
                         
                         echo "Web Server IPs: ${webIps}"
                         echo "Backend IP1: ${backendIp1}"
