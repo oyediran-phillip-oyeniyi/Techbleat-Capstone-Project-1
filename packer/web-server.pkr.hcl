@@ -64,6 +64,7 @@ build {
       "set -e",
       "sudo cp -r /tmp/frontend/. /usr/share/nginx/html/",
       "sudo chown -R nginx:nginx /usr/share/nginx/html/",
+      "sudo sed -i 's|http://localhost:8000/api/|/api/|g' /usr/share/nginx/html/index.html",
       "sudo cp /tmp/nginx.conf /etc/nginx/nginx.conf",
       "sudo chown root:root /etc/nginx/nginx.conf",
       "sudo systemctl enable nginx",

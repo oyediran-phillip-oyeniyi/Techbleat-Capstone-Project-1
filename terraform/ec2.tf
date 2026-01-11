@@ -47,7 +47,9 @@ resource "aws_instance" "web_server_1" {
   vpc_security_group_ids = [aws_security_group.web_server.id]
   key_name              = var.key_name
   
-  user_data = file("${path.module}/user-data/web-server.sh")
+  user_data = templatefile("${path.module}/user-data/web-server.sh", {
+    backend_ips = [aws_instance.backend_server_1.private_ip, aws_instance.backend_server_2.private_ip]
+  })
 
   tags = {
     Name = "web-server-az1"
@@ -63,7 +65,9 @@ resource "aws_instance" "web_server_2" {
   vpc_security_group_ids = [aws_security_group.web_server.id]
   key_name              = var.key_name
   
-  user_data = file("${path.module}/user-data/web-server.sh")
+  user_data = templatefile("${path.module}/user-data/web-server.sh", {
+    backend_ips = [aws_instance.backend_server_1.private_ip, aws_instance.backend_server_2.private_ip]
+  })
 
   tags = {
     Name = "web-server-az2"
@@ -122,4 +126,64 @@ resource "aws_instance" "backend_server_2" {
     aws_db_instance.postgres,
     aws_nat_gateway.nat_1
   ]
+}
+
+# Network Load Balancer
+resource "aws_lb" "web_nlb" {
+  name               = "web-nlb"
+  internal           = false
+  load_balancer_type = "network"
+  subnets            = [aws_subnet.public_1.id, aws_subnet.public_2.id]
+
+  enable_deletion_protection = false
+
+  tags = {
+    Name = "Web NLB"
+  }
+}
+
+# Target Group for Web Servers
+resource "aws_lb_target_group" "web_servers" {
+  name     = "web-servers-tg"
+  port     = 80
+  protocol = "TCP"
+  vpc_id   = aws_vpc.main.id
+
+  health_check {
+    enabled             = true
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 5
+    interval            = 30
+    protocol            = "TCP"
+  }
+
+  tags = {
+    Name = "Web Servers Target Group"
+  }
+}
+
+# Listener for NLB
+resource "aws_lb_listener" "web_listener" {
+  load_balancer_arn = aws_lb.web_nlb.arn
+  port              = "80"
+  protocol          = "TCP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.web_servers.arn
+  }
+}
+
+# Attach Web Servers to Target Group
+resource "aws_lb_target_group_attachment" "web_server_1" {
+  target_group_arn = aws_lb_target_group.web_servers.arn
+  target_id        = aws_instance.web_server_1.id
+  port             = 80
+}
+
+resource "aws_lb_target_group_attachment" "web_server_2" {
+  target_group_arn = aws_lb_target_group.web_servers.arn
+  target_id        = aws_instance.web_server_2.id
+  port             = 80
 }
