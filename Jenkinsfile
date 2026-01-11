@@ -154,9 +154,15 @@ pipeline {
                             returnStdout: true
                         ).trim()
                         
+                        def nlbDns = sh(
+                            script: 'terraform output -raw nlb_dns_name',
+                            returnStdout: true
+                        ).trim()
+                        
                         env.WEB_IPS = webIps
                         env.BACKEND_IP1 = backendIp1
                         env.BACKEND_IP2 = backendIp2
+                        env.NLB_DNS = nlbDns
                         
                         echo "Web Server IPs: ${webIps}"
                         echo "Backend IP1: ${backendIp1}"
@@ -226,9 +232,9 @@ pipeline {
             steps {
                 script {
                     echo "Application deployed successfully!"
-                    echo "Access your application at: http://${env.DB_ENDPOINT}"
+                    echo "Access your application at: http://${env.NLB_DNS}"
                     echo ""
-                    echo "Test the backend API at: http://${env.DB_ENDPOINT}/api/products"
+                    echo "Test the backend API at: http://${env.NLB_DNS}/api/products"
                 }
             }
         }
