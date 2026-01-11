@@ -102,6 +102,36 @@ pipeline {
             }
         }
 
+        stage('Wait for Instances') {
+            when {
+                expression { params.ACTION == 'apply' }
+            }
+            steps {
+                script {
+                    dir('terraform') {
+                        def webInstanceIds = sh(
+                            script: 'terraform output -json web_server_instance_ids',
+                            returnStdout: true
+                        ).trim()
+                        
+                        def backendInstanceIds = sh(
+                            script: 'terraform output -json backend_server_instance_ids',
+                            returnStdout: true
+                        ).trim()
+                        
+                        env.WEB_INSTANCE_IDS = webInstanceIds
+                        env.BACKEND_INSTANCE_IDS = backendInstanceIds
+                        
+                        // Wait for web servers
+                        sh "aws ec2 wait instance-status-ok --instance-ids \$(echo '${webInstanceIds}' | jq -r '.[]')"
+                        
+                        // Wait for backend servers
+                        sh "aws ec2 wait instance-status-ok --instance-ids \$(echo '${backendInstanceIds}' | jq -r '.[]')"
+                    }
+                }
+            }
+        }
+        
         stage('Retrieve Outputs') {
             when {
                 expression { params.ACTION == 'apply' }

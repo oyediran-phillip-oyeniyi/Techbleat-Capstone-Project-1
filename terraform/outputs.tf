@@ -18,6 +18,16 @@ output "backend_server_ips" {
   value       = [aws_instance.backend_server_1.private_ip, aws_instance.backend_server_2.private_ip]
 }
 
+output "web_server_instance_ids" {
+  description = "Instance IDs of web servers"
+  value       = [aws_instance.web_server_1.id, aws_instance.web_server_2.id]
+}
+
+output "backend_server_instance_ids" {
+  description = "Instance IDs of backend servers"
+  value       = [aws_instance.backend_server_1.id, aws_instance.backend_server_2.id]
+}
+
 output "rds_endpoint" {
   description = "RDS PostgreSQL endpoint"
   value       = aws_db_instance.postgres.endpoint
