@@ -16,9 +16,9 @@ After=network.target
 Type=simple
 User=ec2-user
 WorkingDirectory=/home/ec2-user/app
-Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+Environment="PATH=/home/ec2-user/.local/bin:/usr/local/bin:/usr/bin:/bin"
 EnvironmentFile=/home/ec2-user/app/.env
-ExecStart=/usr/local/bin/uvicorn main:app --host 0.0.0.0 --port 8000
+ExecStart=/home/ec2-user/.local/bin/uvicorn main:app --host 0.0.0.0 --port 8000
 Restart=always
 RestartSec=10
 
