@@ -48,7 +48,7 @@ resource "aws_instance" "web_server_1" {
   key_name              = var.key_name
   
   user_data = templatefile("${path.module}/user-data/web-server.sh", {
-    backend_ips = [aws_instance.backend_server_1.private_ip, aws_instance.backend_server_2.private_ip]
+    backend_ips_string = join(" ", [aws_instance.backend_server_1.private_ip, aws_instance.backend_server_2.private_ip])
   })
 
   tags = {
@@ -66,7 +66,7 @@ resource "aws_instance" "web_server_2" {
   key_name              = var.key_name
   
   user_data = templatefile("${path.module}/user-data/web-server.sh", {
-    backend_ips = [aws_instance.backend_server_1.private_ip, aws_instance.backend_server_2.private_ip]
+    backend_ips_string = join(" ", [aws_instance.backend_server_1.private_ip, aws_instance.backend_server_2.private_ip])
   })
 
   tags = {

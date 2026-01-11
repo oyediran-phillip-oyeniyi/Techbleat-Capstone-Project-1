@@ -3,7 +3,7 @@ set -e
 exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
 # Configure backend servers in nginx.conf
-for ip in ${backend_ips}; do
+for ip in ${backend_ips_string}; do
   sed -i "/#BACKEND_SERVERS#/a server $ip:8000;" /etc/nginx/nginx.conf
 done
 sed -i "/#BACKEND_SERVERS#/d" /etc/nginx/nginx.conf
